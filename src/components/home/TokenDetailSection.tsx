@@ -12,6 +12,7 @@ import {
   useBreakpointValue,
   VStack,
 } from "@chakra-ui/react";
+import ScrollAnimation from "../ui/ScrollAnimation";
 
 /**
  * Token Detail Section Component
@@ -24,7 +25,7 @@ export default function TokenDetailSection() {
     <Box
       position="relative"
       bg="transparent"
-      height={{ base: "auto", md: "auto", lg: "1700px" }}
+      height={{ base: "auto", md: "auto", lg: "auto" }}
     >
       {/* Top Wave */}
       <Box
@@ -74,7 +75,7 @@ export default function TokenDetailSection() {
         backgroundPosition="center"
         backgroundAttachment={{ base: "scroll", md: "fixed" }}
         position="relative"
-        height={{ base: "auto", md: "auto", lg: "1700px" }}
+        height={{ base: "auto", md: "auto", lg: "auto" }}
         minHeight={{ base: "auto", md: "auto" }}
         zIndex={0}
         mt="80px"
@@ -98,291 +99,53 @@ export default function TokenDetailSection() {
           maxW="container.xl"
           paddingTop={{ base: "50px", md: "100px", lg: "80px" }}
         >
-          <Heading
-            as="h2"
-            size="xl"
-            mb={8}
-            textAlign="center"
-            color="white"
-            fontFamily="var(--font-jersey)"
-          >
-            Tokenomics
-          </Heading>
+          <ScrollAnimation animationType="fadeIn" duration={1.2}>
+            <Heading
+              as="h2"
+              size="xl"
+              mb={8}
+              textAlign="center"
+              color="white"
+              fontFamily="var(--font-jersey)"
+            >
+              Tokenomics
+            </Heading>
+          </ScrollAnimation>
 
           {/* 移动端布局 */}
           {isMobile ? (
             <VStack spacing={10} align="stretch">
               {/* 移动端 Token Allocation */}
-              <Box
-                bg="rgba(255, 255, 255, 0.1)"
-                p={6}
-                borderRadius="md"
-                borderLeft="4px solid"
-                borderColor="blue.300"
+              <ScrollAnimation
+                animationType="slideInFromBottom"
+                delay={0.3}
+                duration={0.8}
               >
-                <Heading
-                  fontSize="xl"
-                  mb={4}
-                  textAlign="center"
-                  fontFamily="var(--font-jersey)"
-                  color="white"
+                <Box
+                  bg="rgba(255, 255, 255, 0.1)"
+                  p={6}
+                  borderRadius="md"
+                  borderLeft="4px solid"
+                  borderColor="blue.300"
                 >
-                  $MANUSCOIN Token Allocation
-                </Heading>
-
-                <UnorderedList spacing={3} styleType="none" ml={0}>
-                  <ListItem display="flex" alignItems="flex-start" mb={2}>
-                    <Text as="span" fontWeight="bold" mr={2} color="blue.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        10% Airdrop:
-                      </Text>{" "}
-                      Rewards early NFT holders, ensuring core community members
-                      have initial ownership.
-                    </Text>
-                  </ListItem>
-
-                  <ListItem display="flex" alignItems="flex-start" mb={2}>
-                    <Text as="span" fontWeight="bold" mr={2} color="blue.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        10% Ecosystem Growth:
-                      </Text>{" "}
-                      Incentives for developers, content creators, and partners
-                      to expand the Manus ecosystem.
-                    </Text>
-                  </ListItem>
-
-                  <ListItem display="flex" alignItems="flex-start" mb={2}>
-                    <Text as="span" fontWeight="bold" mr={2} color="blue.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        40% Fair Mint:
-                      </Text>{" "}
-                      Open minting for all users with no private sale or
-                      pre-mining.
-                    </Text>
-                  </ListItem>
-
-                  <ListItem display="flex" alignItems="flex-start">
-                    <Text as="span" fontWeight="bold" mr={2} color="blue.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        40% LP Liquidity:
-                      </Text>{" "}
-                      Allocated to AMMs and DEXs to ensure market stability and
-                      deep liquidity.
-                    </Text>
-                  </ListItem>
-                </UnorderedList>
-              </Box>
-
-              {/* 移动端图片 1 */}
-              <Box mx="auto" my={4}>
-                <Image
-                  src="/images/people1.png"
-                  alt="Manus Character 1"
-                  width="200px"
-                  height="200px"
-                  objectFit="contain"
-                  mx="auto"
-                />
-              </Box>
-
-              {/* 移动端 Core Token Mechanics */}
-              <Box
-                bg="rgba(255, 255, 255, 0.1)"
-                p={6}
-                borderRadius="md"
-                borderLeft="4px solid"
-                borderColor="purple.300"
-              >
-                <Heading
-                  fontSize="xl"
-                  mb={4}
-                  textAlign="center"
-                  fontFamily="var(--font-jersey)"
-                  color="white"
-                >
-                  Core Token Mechanics
-                </Heading>
-
-                <UnorderedList spacing={3} styleType="none" ml={0}>
-                  <ListItem display="flex" alignItems="flex-start" mb={2}>
-                    <Text as="span" fontWeight="bold" mr={2} color="purple.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        DAO Governance:
-                      </Text>{" "}
-                      $MANUSCOIN holders can vote on the project's future
-                      direction.
-                    </Text>
-                  </ListItem>
-
-                  <ListItem display="flex" alignItems="flex-start" mb={2}>
-                    <Text as="span" fontWeight="bold" mr={2} color="purple.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        Staking Rewards:
-                      </Text>{" "}
-                      Users can stake $MANUSCOIN to earn additional rewards.
-                    </Text>
-                  </ListItem>
-
-                  <ListItem display="flex" alignItems="flex-start" mb={2}>
-                    <Text as="span" fontWeight="bold" mr={2} color="purple.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        Train-to-Earn:
-                      </Text>{" "}
-                      Users contribute data and train the AI to receive $MANUS
-                      incentives.
-                    </Text>
-                  </ListItem>
-
-                  <ListItem display="flex" alignItems="flex-start">
-                    <Text as="span" fontWeight="bold" mr={2} color="purple.300">
-                      •
-                    </Text>
-                    <Text
-                      fontFamily="var(--font-jersey)"
-                      fontSize="sm"
-                      color="white"
-                    >
-                      <Text
-                        as="span"
-                        fontWeight="bold"
-                        fontFamily="var(--font-jersey)"
-                      >
-                        Meme-to-Earn:
-                      </Text>{" "}
-                      Community members can create and share Manus-related memes
-                      to earn tokens.
-                    </Text>
-                  </ListItem>
-                </UnorderedList>
-              </Box>
-
-              {/* 移动端图片 2 */}
-              <Box mx="auto" my={4}>
-                <Image
-                  src="/images/people2.png"
-                  alt="Manus Character 2"
-                  width="200px"
-                  height="200px"
-                  objectFit="contain"
-                  mx="auto"
-                />
-              </Box>
-            </VStack>
-          ) : (
-            // 桌面端布局 - 按照图片中的布局
-            <Flex
-              direction="column"
-              align="center"
-              justify="center"
-              mt={{ base: 6, md: 12 }}
-              maxW="1000px"
-              mx="auto"
-            >
-              {/* 第一部分：Token Allocation */}
-              <Flex
-                direction="row"
-                justify="space-between"
-                align="flex-start"
-                w="100%"
-                mb={20}
-              >
-                {/* 左侧文本 */}
-                <Box width="60%" pr={8}>
                   <Heading
-                    fontSize={{ md: "xl", lg: "2xl" }}
-                    mb={6}
-                    textAlign="left"
+                    fontSize="xl"
+                    mb={4}
+                    textAlign="center"
                     fontFamily="var(--font-jersey)"
                     color="white"
                   >
                     $MANUSCOIN Token Allocation
                   </Heading>
 
-                  <UnorderedList spacing={4} styleType="none" ml={0}>
-                    <ListItem display="flex" alignItems="flex-start" mb={3}>
+                  <UnorderedList spacing={3} styleType="none" ml={0}>
+                    <ListItem display="flex" alignItems="flex-start" mb={2}>
                       <Text as="span" fontWeight="bold" mr={2} color="white">
                         •
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -397,13 +160,13 @@ export default function TokenDetailSection() {
                       </Text>
                     </ListItem>
 
-                    <ListItem display="flex" alignItems="flex-start" mb={3}>
+                    <ListItem display="flex" alignItems="flex-start" mb={2}>
                       <Text as="span" fontWeight="bold" mr={2} color="white">
                         •
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -418,13 +181,13 @@ export default function TokenDetailSection() {
                       </Text>
                     </ListItem>
 
-                    <ListItem display="flex" alignItems="flex-start" mb={3}>
+                    <ListItem display="flex" alignItems="flex-start" mb={2}>
                       <Text as="span" fontWeight="bold" mr={2} color="white">
                         •
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -445,7 +208,7 @@ export default function TokenDetailSection() {
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -455,73 +218,63 @@ export default function TokenDetailSection() {
                         >
                           40% LP Liquidity:
                         </Text>{" "}
-                        Allocated to AMMs (Automated Market Makers) and DEXs
-                        (Decentralized Exchanges) to ensure market stability and
-                        deep liquidity.
+                        Allocated to AMMs and DEXs to ensure market stability
+                        and deep liquidity.
                       </Text>
                     </ListItem>
                   </UnorderedList>
                 </Box>
+              </ScrollAnimation>
 
-                {/* 右侧图片 */}
-                <Box
-                  width="40%"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                >
+              {/* 移动端图片 1 */}
+              <ScrollAnimation
+                animationType="zoomIn"
+                delay={0.5}
+                duration={0.8}
+              >
+                <Box mx="auto" my={4}>
                   <Image
                     src="/images/people1.png"
                     alt="Manus Character 1"
-                    width="250px"
+                    width="200px"
+                    height="200px"
                     objectFit="contain"
+                    mx="auto"
                   />
                 </Box>
-              </Flex>
+              </ScrollAnimation>
 
-              {/* 第二部分：Core Token Mechanics */}
-              <Flex
-                direction="row"
-                justify="space-between"
-                align="flex-start"
-                w="100%"
-                mt={10}
+              {/* 移动端 Core Token Mechanics */}
+              <ScrollAnimation
+                animationType="slideInFromBottom"
+                delay={0.7}
+                duration={0.8}
               >
-                {/* 左侧图片 */}
                 <Box
-                  width="40%"
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
+                  bg="rgba(255, 255, 255, 0.1)"
+                  p={6}
+                  borderRadius="md"
+                  borderLeft="4px solid"
+                  borderColor="purple.300"
                 >
-                  <Image
-                    src="/images/people2.png"
-                    alt="Manus Character 2"
-                    width="250px"
-                    objectFit="contain"
-                  />
-                </Box>
-
-                {/* 右侧文本 */}
-                <Box width="60%" pl={8}>
                   <Heading
-                    fontSize={{ md: "xl", lg: "2xl" }}
-                    mb={6}
-                    textAlign="left"
+                    fontSize="xl"
+                    mb={4}
+                    textAlign="center"
                     fontFamily="var(--font-jersey)"
                     color="white"
                   >
                     Core Token Mechanics
                   </Heading>
 
-                  <UnorderedList spacing={4} styleType="none" ml={0}>
-                    <ListItem display="flex" alignItems="flex-start" mb={3}>
+                  <UnorderedList spacing={3} styleType="none" ml={0}>
+                    <ListItem display="flex" alignItems="flex-start" mb={2}>
                       <Text as="span" fontWeight="bold" mr={2} color="white">
                         •
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -536,13 +289,13 @@ export default function TokenDetailSection() {
                       </Text>
                     </ListItem>
 
-                    <ListItem display="flex" alignItems="flex-start" mb={3}>
+                    <ListItem display="flex" alignItems="flex-start" mb={2}>
                       <Text as="span" fontWeight="bold" mr={2} color="white">
                         •
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -556,13 +309,13 @@ export default function TokenDetailSection() {
                       </Text>
                     </ListItem>
 
-                    <ListItem display="flex" alignItems="flex-start" mb={3}>
+                    <ListItem display="flex" alignItems="flex-start" mb={2}>
                       <Text as="span" fontWeight="bold" mr={2} color="white">
                         •
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -583,7 +336,7 @@ export default function TokenDetailSection() {
                       </Text>
                       <Text
                         fontFamily="var(--font-jersey)"
-                        fontSize={{ md: "sm", lg: "md" }}
+                        fontSize="sm"
                         color="white"
                       >
                         <Text
@@ -599,8 +352,287 @@ export default function TokenDetailSection() {
                     </ListItem>
                   </UnorderedList>
                 </Box>
+              </ScrollAnimation>
+
+              {/* 移动端图片 2 */}
+              <ScrollAnimation
+                animationType="zoomIn"
+                delay={0.9}
+                duration={0.8}
+              >
+                <Box mx="auto" my={4}>
+                  <Image
+                    src="/images/people2.png"
+                    alt="Manus Character 2"
+                    width="200px"
+                    height="200px"
+                    objectFit="contain"
+                    mx="auto"
+                  />
+                </Box>
+              </ScrollAnimation>
+            </VStack>
+          ) : (
+            // PC端布局 - 根据图片修改
+            <Box maxW="1200px" mx="auto">
+              {/* 第一行：Token Allocation + 图片 */}
+              <Flex
+                direction="row"
+                justify="space-between"
+                align="center"
+                mb={20}
+                gap={10}
+              >
+                {/* Token Allocation */}
+                <ScrollAnimation
+                  animationType="slideInFromLeft"
+                  delay={0.3}
+                  duration={0.8}
+                >
+                  <Box width="100%">
+                    <Heading
+                      fontSize="2xl"
+                      mb={6}
+                      textAlign="left"
+                      fontFamily="var(--font-jersey)"
+                      color="white"
+                    >
+                      $MANUSCOIN Token Allocation
+                    </Heading>
+
+                    <UnorderedList spacing={4} styleType="none" ml={0}>
+                      <ListItem display="flex" alignItems="flex-start" mb={3}>
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            10% Airdrop:
+                          </Text>{" "}
+                          Rewards early NFT holders, ensuring core community
+                          members have initial ownership.
+                        </Text>
+                      </ListItem>
+
+                      <ListItem display="flex" alignItems="flex-start" mb={3}>
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            10% Ecosystem Growth:
+                          </Text>{" "}
+                          Incentives for developers, content creators, and
+                          partners to expand the Manus ecosystem.
+                        </Text>
+                      </ListItem>
+
+                      <ListItem display="flex" alignItems="flex-start" mb={3}>
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            40% Fair Mint:
+                          </Text>{" "}
+                          Open minting for all users with no private sale or
+                          pre-mining.
+                        </Text>
+                      </ListItem>
+
+                      <ListItem display="flex" alignItems="flex-start">
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            40% LP Liquidity:
+                          </Text>{" "}
+                          Allocated to AMMs and DEXs to ensure market stability
+                          and deep liquidity.
+                        </Text>
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                </ScrollAnimation>
+
+                {/* Character Image 1 */}
+                <ScrollAnimation
+                  animationType="zoomIn"
+                  delay={0.5}
+                  duration={0.8}
+                >
+                  <Box width="100%" display="flex" justifyContent="center">
+                    <Image
+                      src="/images/people2.png"
+                      alt="Manus Character"
+                      width="350px"
+                      objectFit="contain"
+                    />
+                  </Box>
+                </ScrollAnimation>
               </Flex>
-            </Flex>
+
+              {/* 第二行：图片 + Core Token Mechanics */}
+              <Flex
+                direction="row"
+                justify="space-between"
+                align="center"
+                gap={10}
+              >
+                {/* Character Image 2 */}
+                <ScrollAnimation
+                  animationType="zoomIn"
+                  delay={0.7}
+                  duration={0.8}
+                >
+                  <Box width="100%" display="flex" justifyContent="center">
+                    <Image
+                      src="/images/people1.png"
+                      alt="Manus Character"
+                      width="350px"
+                      objectFit="contain"
+                    />
+                  </Box>
+                </ScrollAnimation>
+
+                {/* Core Token Mechanics */}
+                <ScrollAnimation
+                  animationType="slideInFromRight"
+                  delay={0.9}
+                  duration={0.8}
+                >
+                  <Box width="100%">
+                    <Heading
+                      fontSize="2xl"
+                      mb={6}
+                      textAlign="left"
+                      fontFamily="var(--font-jersey)"
+                      color="white"
+                    >
+                      Core Token Mechanics
+                    </Heading>
+
+                    <UnorderedList spacing={4} styleType="none" ml={0}>
+                      <ListItem display="flex" alignItems="flex-start" mb={3}>
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            DAO Governance:
+                          </Text>{" "}
+                          $MANUSCOIN holders can vote on the project's future
+                          direction.
+                        </Text>
+                      </ListItem>
+
+                      <ListItem display="flex" alignItems="flex-start" mb={3}>
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            Staking Rewards:
+                          </Text>{" "}
+                          Users can stake $MANUSCOIN to earn additional rewards.
+                        </Text>
+                      </ListItem>
+
+                      <ListItem display="flex" alignItems="flex-start" mb={3}>
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            Train-to-Earn:
+                          </Text>{" "}
+                          Users contribute data and train the AI to receive
+                          $MANUS incentives.
+                        </Text>
+                      </ListItem>
+
+                      <ListItem display="flex" alignItems="flex-start">
+                        <Text as="span" fontWeight="bold" mr={2} color="white">
+                          •
+                        </Text>
+                        <Text
+                          fontFamily="var(--font-jersey)"
+                          fontSize="md"
+                          color="white"
+                        >
+                          <Text
+                            as="span"
+                            fontWeight="bold"
+                            fontFamily="var(--font-jersey)"
+                          >
+                            Meme-to-Earn:
+                          </Text>{" "}
+                          Community members can create and share Manus-related
+                          memes to earn tokens.
+                        </Text>
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                </ScrollAnimation>
+              </Flex>
+            </Box>
           )}
         </Container>
       </Box>
@@ -608,10 +640,10 @@ export default function TokenDetailSection() {
       {/* Bottom Wave */}
       <Box
         position="absolute"
-        bottom="-76px"
+        bottom="-150px"
         left={0}
         right={0}
-        height="150px"
+        height="160px"
         zIndex={2}
         overflow="visible"
       >

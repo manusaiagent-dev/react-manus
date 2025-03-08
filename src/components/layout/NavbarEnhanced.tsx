@@ -13,6 +13,7 @@ import {
   Collapse,
   Image,
   useToast,
+  keyframes,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useAppContext } from "../../stores/context";
@@ -22,6 +23,24 @@ interface IconProps {
   h?: number;
   [key: string]: any;
 }
+
+// 定义动画关键帧
+const pulseAnimation = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+const glowAnimation = keyframes`
+  0% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+  100% { box-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+`;
+
+const slideInFromTop = keyframes`
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+`;
 
 const HamburgerIcon = ({ w, h, ...rest }: IconProps) => (
   <svg
@@ -62,11 +81,12 @@ const CloseIcon = ({ w, h, ...rest }: IconProps) => (
  * Navbar Component
  * Displays the top navigation menu and connect wallet button
  */
-const Navbar = () => {
+const NavbarEnhanced = () => {
   const toast = useToast();
   const { isOpen, onToggle } = useDisclosure();
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeSection, setActiveSection] = useState("");
   const { walletAddress, currentNetwork, setWalletAddress, setCurrentNetwork } =
     useAppContext();
 
@@ -80,6 +100,19 @@ const Navbar = () => {
 
       setScrollProgress(progress);
       setScrolled(scrollY > 20);
+
+      // 检测当前活动的部分
+      const sections = ["about", "gameplay", "token-detail", "roadmap", "faq"];
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 100 && rect.bottom >= 100) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -88,10 +121,10 @@ const Navbar = () => {
 
   // 计算背景色的透明度
   const bgOpacity = 0.2 + scrollProgress * 0.8; // 从 0.2 到 1.0
-  const navbarBg = `rgba(40, 44, 78, ${bgOpacity})`;
+  const navbarBg = `linear-gradient(90deg, rgba(40, 44, 78, ${bgOpacity}) 0%, rgba(60, 64, 98, ${bgOpacity}) 50%, rgba(40, 44, 78, ${bgOpacity}) 100%)`;
   const boxShadowOpacity = scrollProgress * 0.3; // 从 0 到 0.3
   const navbarShadow = scrolled
-    ? `0 2px 10px rgba(0, 0, 0, ${boxShadowOpacity})`
+    ? `0 2px 15px rgba(0, 150, 255, ${boxShadowOpacity})`
     : "none";
 
   return (
@@ -109,19 +142,25 @@ const Navbar = () => {
         backdropFilter={scrolled ? `blur(${scrollProgress * 8}px)` : "none"}
         borderBottom={
           scrolled
-            ? `1px solid rgba(255, 255, 255, ${scrollProgress * 0.1})`
+            ? `1px solid rgba(100, 200, 255, ${scrollProgress * 0.2})`
             : "none"
         }
+        animation={scrolled ? `${glowAnimation} 3s infinite` : "none"}
       >
         {/* Website Logo */}
         <Flex align="center">
           <Link href="/" _hover={{ textDecoration: "none" }}>
-            <Flex align="center">
+            <Flex
+              align="center"
+              transition="transform 0.3s ease"
+              _hover={{ transform: "scale(1.05)" }}
+            >
               <Image
                 src="/images/Manusicon.png"
                 alt="Manus Logo"
                 height="40px"
                 mr={2}
+                animation={`${pulseAnimation} 5s infinite ease-in-out`}
               />
               <Heading
                 as="h1"
@@ -130,6 +169,13 @@ const Navbar = () => {
                 fontWeight="bold"
                 color="white"
                 fontFamily="var(--font-jersey)"
+                bgGradient="linear(to-r, white, cyan.300, white)"
+                bgClip="text"
+                transition="all 0.3s ease"
+                _hover={{
+                  bgGradient: "linear(to-r, cyan.300, purple.300, cyan.300)",
+                  letterSpacing: "1px",
+                }}
               >
                 Manus
               </Heading>
@@ -147,6 +193,8 @@ const Navbar = () => {
           variant="ghost"
           aria-label="Toggle Navigation"
           _hover={{ bg: "rgba(255,255,255,0.1)" }}
+          transition="all 0.3s ease"
+          transform={isOpen ? "rotate(90deg)" : "rotate(0deg)"}
         />
 
         {/* Desktop Navigation Links */}
@@ -159,11 +207,27 @@ const Navbar = () => {
           <Link
             href="#about"
             fontWeight="medium"
-            color="white"
+            color={activeSection === "about" ? "cyan.300" : "white"}
             fontFamily="var(--font-jersey)"
+            position="relative"
             _hover={{
               textDecoration: "none",
               color: "cyan.300",
+            }}
+            sx={{
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                width: activeSection === "about" ? "100%" : "0%",
+                height: "2px",
+                bottom: "-4px",
+                left: "0",
+                backgroundColor: "cyan.300",
+                transition: "all 0.3s ease",
+              },
+              "&:hover::after": {
+                width: "100%",
+              },
             }}
           >
             Who is Manus?
@@ -171,11 +235,27 @@ const Navbar = () => {
           <Link
             href="#gameplay"
             fontWeight="medium"
-            color="white"
+            color={activeSection === "gameplay" ? "cyan.300" : "white"}
             fontFamily="var(--font-jersey)"
+            position="relative"
             _hover={{
               textDecoration: "none",
               color: "cyan.300",
+            }}
+            sx={{
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                width: activeSection === "gameplay" ? "100%" : "0%",
+                height: "2px",
+                bottom: "-4px",
+                left: "0",
+                backgroundColor: "cyan.300",
+                transition: "all 0.3s ease",
+              },
+              "&:hover::after": {
+                width: "100%",
+              },
             }}
           >
             How To Use Bridge
@@ -183,11 +263,27 @@ const Navbar = () => {
           <Link
             href="#token-detail"
             fontWeight="medium"
-            color="white"
+            color={activeSection === "token-detail" ? "cyan.300" : "white"}
             fontFamily="var(--font-jersey)"
+            position="relative"
             _hover={{
               textDecoration: "none",
               color: "cyan.300",
+            }}
+            sx={{
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                width: activeSection === "token-detail" ? "100%" : "0%",
+                height: "2px",
+                bottom: "-4px",
+                left: "0",
+                backgroundColor: "cyan.300",
+                transition: "all 0.3s ease",
+              },
+              "&:hover::after": {
+                width: "100%",
+              },
             }}
           >
             Tokenomics
@@ -195,11 +291,27 @@ const Navbar = () => {
           <Link
             href="#roadmap"
             fontWeight="medium"
-            color="white"
+            color={activeSection === "roadmap" ? "cyan.300" : "white"}
             fontFamily="var(--font-jersey)"
+            position="relative"
             _hover={{
               textDecoration: "none",
               color: "cyan.300",
+            }}
+            sx={{
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                width: activeSection === "roadmap" ? "100%" : "0%",
+                height: "2px",
+                bottom: "-4px",
+                left: "0",
+                backgroundColor: "cyan.300",
+                transition: "all 0.3s ease",
+              },
+              "&:hover::after": {
+                width: "100%",
+              },
             }}
           >
             Roadmap
@@ -207,11 +319,27 @@ const Navbar = () => {
           <Link
             href="#faq"
             fontWeight="medium"
-            color="white"
+            color={activeSection === "faq" ? "cyan.300" : "white"}
             fontFamily="var(--font-jersey)"
+            position="relative"
             _hover={{
               textDecoration: "none",
               color: "cyan.300",
+            }}
+            sx={{
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                width: activeSection === "faq" ? "100%" : "0%",
+                height: "2px",
+                bottom: "-4px",
+                left: "0",
+                backgroundColor: "cyan.300",
+                transition: "all 0.3s ease",
+              },
+              "&:hover::after": {
+                width: "100%",
+              },
             }}
           >
             FAQ
@@ -220,12 +348,15 @@ const Navbar = () => {
 
         {/* Social Media Icons */}
         <HStack spacing={4} display={{ base: "none", md: "flex" }} mr={4}>
-          <Link href="https://twitter.com/manus" isExternal>
+          <Link href="" isExternal>
             <Box
               bg="black"
               borderRadius="full"
               p={2}
-              _hover={{ transform: "translateY(-2px)" }}
+              _hover={{
+                transform: "translateY(-5px) rotate(15deg)",
+                boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+              }}
               transition="all 0.3s ease"
             >
               <Image
@@ -236,12 +367,15 @@ const Navbar = () => {
               />
             </Box>
           </Link>
-          <Link href="https://t.me/manus" isExternal>
+          <Link href="" isExternal>
             <Box
               bg="#31a8db"
               borderRadius="full"
               p={2}
-              _hover={{ transform: "translateY(-2px)" }}
+              _hover={{
+                transform: "translateY(-5px) rotate(-15deg)",
+                boxShadow: "0 0 15px rgba(49, 168, 219, 0.7)",
+              }}
               transition="all 0.3s ease"
             >
               <Image
@@ -260,23 +394,35 @@ const Navbar = () => {
           <Box
             display={{ md: "none" }}
             mt={4}
-            bg="rgba(40, 44, 78, 0.95)"
+            bg="linear-gradient(135deg, rgba(40, 44, 78, 0.95) 0%, rgba(60, 64, 98, 0.95) 100%)"
             p={4}
             borderRadius="md"
-            border="1px solid rgba(255,255,255,0.1)"
+            border="1px solid rgba(100, 200, 255, 0.2)"
             backdropFilter="blur(10px)"
             maxH="80vh"
             overflowY="auto"
+            boxShadow="0 10px 30px -10px rgba(0, 0, 0, 0.5)"
+            animation={`${slideInFromTop} 0.3s ease-out forwards`}
           >
             <VStack spacing={4} align="stretch">
               <Link
                 href="#about"
                 p={2}
                 fontFamily="var(--font-jersey)"
+                color={activeSection === "about" ? "cyan.300" : "white"}
+                borderLeft={
+                  activeSection === "about" ? "3px solid" : "0px solid"
+                }
+                borderColor="cyan.300"
+                paddingLeft={activeSection === "about" ? "10px" : "2px"}
+                transition="all 0.3s ease"
                 _hover={{
                   bg: "rgba(255,255,255,0.1)",
                   color: "cyan.300",
                   textDecoration: "none",
+                  paddingLeft: "10px",
+                  borderLeft: "3px solid",
+                  borderColor: "cyan.300",
                 }}
                 borderRadius="md"
               >
@@ -286,10 +432,20 @@ const Navbar = () => {
                 href="#gameplay"
                 p={2}
                 fontFamily="var(--font-jersey)"
+                color={activeSection === "gameplay" ? "cyan.300" : "white"}
+                borderLeft={
+                  activeSection === "gameplay" ? "3px solid" : "0px solid"
+                }
+                borderColor="cyan.300"
+                paddingLeft={activeSection === "gameplay" ? "10px" : "2px"}
+                transition="all 0.3s ease"
                 _hover={{
                   bg: "rgba(255,255,255,0.1)",
                   color: "cyan.300",
                   textDecoration: "none",
+                  paddingLeft: "10px",
+                  borderLeft: "3px solid",
+                  borderColor: "cyan.300",
                 }}
                 borderRadius="md"
               >
@@ -299,10 +455,20 @@ const Navbar = () => {
                 href="#token-detail"
                 p={2}
                 fontFamily="var(--font-jersey)"
+                color={activeSection === "token-detail" ? "cyan.300" : "white"}
+                borderLeft={
+                  activeSection === "token-detail" ? "3px solid" : "0px solid"
+                }
+                borderColor="cyan.300"
+                paddingLeft={activeSection === "token-detail" ? "10px" : "2px"}
+                transition="all 0.3s ease"
                 _hover={{
                   bg: "rgba(255,255,255,0.1)",
                   color: "cyan.300",
                   textDecoration: "none",
+                  paddingLeft: "10px",
+                  borderLeft: "3px solid",
+                  borderColor: "cyan.300",
                 }}
                 borderRadius="md"
               >
@@ -312,10 +478,20 @@ const Navbar = () => {
                 href="#roadmap"
                 p={2}
                 fontFamily="var(--font-jersey)"
+                color={activeSection === "roadmap" ? "cyan.300" : "white"}
+                borderLeft={
+                  activeSection === "roadmap" ? "3px solid" : "0px solid"
+                }
+                borderColor="cyan.300"
+                paddingLeft={activeSection === "roadmap" ? "10px" : "2px"}
+                transition="all 0.3s ease"
                 _hover={{
                   bg: "rgba(255,255,255,0.1)",
                   color: "cyan.300",
                   textDecoration: "none",
+                  paddingLeft: "10px",
+                  borderLeft: "3px solid",
+                  borderColor: "cyan.300",
                 }}
                 borderRadius="md"
               >
@@ -325,10 +501,18 @@ const Navbar = () => {
                 href="#faq"
                 p={2}
                 fontFamily="var(--font-jersey)"
+                color={activeSection === "faq" ? "cyan.300" : "white"}
+                borderLeft={activeSection === "faq" ? "3px solid" : "0px solid"}
+                borderColor="cyan.300"
+                paddingLeft={activeSection === "faq" ? "10px" : "2px"}
+                transition="all 0.3s ease"
                 _hover={{
                   bg: "rgba(255,255,255,0.1)",
                   color: "cyan.300",
                   textDecoration: "none",
+                  paddingLeft: "10px",
+                  borderLeft: "3px solid",
+                  borderColor: "cyan.300",
                 }}
                 borderRadius="md"
               >
@@ -337,12 +521,15 @@ const Navbar = () => {
 
               {/* Social Media Icons - Mobile */}
               <HStack spacing={4} pt={2} pb={2} justifyContent="center">
-                <Link href="https://twitter.com/manus" isExternal>
+                <Link href="" isExternal>
                   <Box
                     bg="black"
                     borderRadius="full"
                     p={2}
-                    _hover={{ transform: "translateY(-2px)" }}
+                    _hover={{
+                      transform: "translateY(-5px) rotate(15deg)",
+                      boxShadow: "0 0 15px rgba(255, 255, 255, 0.5)",
+                    }}
                     transition="all 0.3s ease"
                   >
                     <Image
@@ -353,12 +540,15 @@ const Navbar = () => {
                     />
                   </Box>
                 </Link>
-                <Link href="https://t.me/manus" isExternal>
+                <Link href="" isExternal>
                   <Box
                     bg="#31a8db"
                     borderRadius="full"
                     p={2}
-                    _hover={{ transform: "translateY(-2px)" }}
+                    _hover={{
+                      transform: "translateY(-5px) rotate(-15deg)",
+                      boxShadow: "0 0 15px rgba(49, 168, 219, 0.7)",
+                    }}
                     transition="all 0.3s ease"
                   >
                     <Image
@@ -381,4 +571,4 @@ const Navbar = () => {
     </Box>
   );
 };
-export default Navbar;
+export default NavbarEnhanced;

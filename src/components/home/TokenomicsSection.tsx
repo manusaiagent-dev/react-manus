@@ -12,6 +12,7 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { FaRocket } from "react-icons/fa";
+import ScrollAnimation from "../ui/ScrollAnimation";
 
 /**
  * Tokenomics Section Component
@@ -63,24 +64,30 @@ export default function TokenomicsSection() {
         backgroundColor="transparent"
       >
         <Container maxW="container.xl" px={{ base: 4, md: 6 }}>
-          <Heading
-            textAlign="center"
-            mb={{ base: 4, md: 8 }}
-            bgGradient="linear(to-r, cyan.400, purple.500)"
-            bgClip="text"
-            fontSize={{ base: "2xl", md: "3xl" }}
-          >
-            Tokenomics
-          </Heading>
+          <ScrollAnimation animationType="fadeIn" duration={1.2}>
+            <Heading
+              textAlign="center"
+              mb={{ base: 4, md: 8 }}
+              bgGradient="linear(to-r, cyan.400, purple.500)"
+              bgClip="text"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              cursor="default"
+            >
+              Tokenomics
+            </Heading>
+          </ScrollAnimation>
 
-          <Heading
-            textAlign="center"
-            mb={{ base: 8, md: 16 }}
-            color="whiteAlpha.800"
-            fontSize={{ base: "lg", md: "xl" }}
-          >
-            Distribution Model
-          </Heading>
+          <ScrollAnimation animationType="fadeIn" delay={0.2} duration={1}>
+            <Heading
+              textAlign="center"
+              mb={{ base: 8, md: 16 }}
+              color="whiteAlpha.800"
+              fontSize={{ base: "lg", md: "xl" }}
+              cursor="default"
+            >
+              Distribution Model
+            </Heading>
+          </ScrollAnimation>
 
           <Grid
             templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
@@ -88,58 +95,94 @@ export default function TokenomicsSection() {
             mb={{ base: 8, md: 16 }}
           >
             {/* Card 1 */}
-            <GridItem>
-              <Box
-                p={{ base: 4, md: 6 }}
-                bg="rgba(84, 84, 120, 0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(155, 155, 200, 0.1)"
-                backdropFilter="blur(5px)"
-                height="100%"
-                width={{ base: "100%", md: "100%" }}
-              >
-                <Text fontSize={{ base: "xs", md: "sm" }}>
-                  Fair Launch: No pre-mine, no private sale—everyone starts
-                  equally, with a one-time mint limit per account.
-                </Text>
-              </Box>
-            </GridItem>
+            <ScrollAnimation
+              animationType="slideInFromBottom"
+              delay={0.3}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={{ base: 4, md: 6 }}
+                  bg="rgba(84, 84, 120, 0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(155, 155, 200, 0.1)"
+                  backdropFilter="blur(5px)"
+                  height="100%"
+                  width={{ base: "100%", md: "100%" }}
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+                    borderColor: "rgba(155, 155, 255, 0.3)",
+                  }}
+                >
+                  <Text fontSize={{ base: "xs", md: "sm" }} cursor="default">
+                    Fair Launch: No pre-mine, no private sale—everyone starts
+                    equally, with a one-time mint limit per account.
+                  </Text>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
 
             {/* Card 2 */}
-            <GridItem>
-              <Box
-                p={{ base: 4, md: 6 }}
-                bg="rgba(84, 84, 120, 0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                height="100%"
-                width={{ base: "100%", md: "100%" }}
-              >
-                <Text fontSize={{ base: "xs", md: "sm" }}>
-                  Early Bird Advantage: To reward early adopters, token prices
-                  increase linearly—minting earlier grants more tokens.
-                </Text>
-              </Box>
-            </GridItem>
+            <ScrollAnimation
+              animationType="slideInFromBottom"
+              delay={0.5}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={{ base: 4, md: 6 }}
+                  bg="rgba(84, 84, 120, 0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
+                  height="100%"
+                  width={{ base: "100%", md: "100%" }}
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+                    borderColor: "rgba(155, 155, 255, 0.3)",
+                  }}
+                >
+                  <Text fontSize={{ base: "xs", md: "sm" }} cursor="default">
+                    Early Bird Advantage: To reward early adopters, token prices
+                    increase linearly—minting earlier grants more tokens.
+                  </Text>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
 
             {/* Card 3 */}
-            <GridItem>
-              <Box
-                p={{ base: 4, md: 6 }}
-                bg="rgba(84, 84, 120, 0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                height="100%"
-                width={{ base: "100%", md: "100%" }}
-              >
-                <Text fontSize={{ base: "xs", md: "sm" }}>
-                  Referral Airdrop: Earn 10% of the invitee's presale tokens as
-                  an airdrop.
-                </Text>
-              </Box>
-            </GridItem>
+            <ScrollAnimation
+              animationType="slideInFromBottom"
+              delay={0.7}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={{ base: 4, md: 6 }}
+                  bg="rgba(84, 84, 120, 0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
+                  height="100%"
+                  width={{ base: "100%", md: "100%" }}
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+                    borderColor: "rgba(155, 155, 255, 0.3)",
+                  }}
+                >
+                  <Text fontSize={{ base: "xs", md: "sm" }} cursor="default">
+                    Referral Airdrop: Earn 10% of the invitee's presale tokens
+                    as an airdrop.
+                  </Text>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
           </Grid>
 
           <Grid
@@ -148,53 +191,80 @@ export default function TokenomicsSection() {
             mb={{ base: 8, md: 16 }}
           >
             {/* Card 4 */}
-            <GridItem>
-              <Box
-                p={{ base: 4, md: 6 }}
-                bg="rgba(84, 84, 120, 0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                height="100%"
-                width={{ base: "100%", md: "100%" }}
-              >
-                <Text fontSize={{ base: "xs", md: "sm" }}>
-                  Minting Rules: Min 0.05 ETH (0.16BNB/0.75OL), Max 0.5
-                  ETH(1.68NB/7.5OL) per wallet. First 24 hours: Receive one free
-                  NFT per 0.05 ETH minted (maximum 10 NFTs per wallet). Presale
-                  duration: 72 hours.
-                </Text>
-              </Box>
-            </GridItem>
+            <ScrollAnimation
+              animationType="slideInFromLeft"
+              delay={0.4}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={{ base: 4, md: 6 }}
+                  bg="rgba(84, 84, 120, 0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
+                  height="100%"
+                  width={{ base: "100%", md: "100%" }}
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+                    borderColor: "rgba(155, 155, 255, 0.3)",
+                  }}
+                >
+                  <Text fontSize={{ base: "xs", md: "sm" }} cursor="default">
+                    Minting Rules: Min 0.05 ETH (0.16BNB/0.75OL), Max 0.5
+                    ETH(1.68NB/7.5OL) per wallet. First 24 hours: Receive one
+                    free NFT per 0.05 ETH minted (maximum 10 NFTs per wallet).
+                    Presale duration: 72 hours.
+                  </Text>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
 
             {/* Card 5 */}
-            <GridItem>
-              <Box
-                p={{ base: 4, md: 6 }}
-                bg="rgba(84, 84, 120, 0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                height="100%"
-                width={{ base: "100%", md: "100%" }}
-              >
-                <Text fontSize={{ base: "xs", md: "sm" }}>
-                  Mining by Participation: Community members earn $MANUS by
-                  contributing to AI training, content creation, and ecosystem
-                  development.
-                </Text>
-              </Box>
-            </GridItem>
+            <ScrollAnimation
+              animationType="slideInFromRight"
+              delay={0.4}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={{ base: 4, md: 6 }}
+                  bg="rgba(84, 84, 120, 0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
+                  height="100%"
+                  width={{ base: "100%", md: "100%" }}
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+                    borderColor: "rgba(155, 155, 255, 0.3)",
+                  }}
+                >
+                  <Text fontSize={{ base: "xs", md: "sm" }} cursor="default">
+                    Mining by Participation: Community members earn $MANUS by
+                    contributing to AI training, content creation, and ecosystem
+                    development.
+                  </Text>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
           </Grid>
 
-          <Heading
-            textAlign="center"
-            mb={{ base: 4, md: 8 }}
-            color="whiteAlpha.800"
-            fontSize={{ base: "lg", md: "xl" }}
-          >
-            Governance Mechanism
-          </Heading>
+          <ScrollAnimation animationType="fadeIn" delay={0.6} duration={1}>
+            <Heading
+              textAlign="center"
+              mb={{ base: 4, md: 8 }}
+              color="whiteAlpha.800"
+              fontSize={{ base: "lg", md: "xl" }}
+              cursor="default"
+            >
+              Governance Mechanism
+            </Heading>
+          </ScrollAnimation>
 
           <Grid
             templateColumns={{ base: "1fr" }}
@@ -204,21 +274,29 @@ export default function TokenomicsSection() {
             mb={{ base: 4, md: 0 }}
           >
             {/* Governance Card */}
-            <GridItem>
-              <Box
-                p={{ base: 4, md: 6 }}
-                bg="rgba(84, 84, 120, 0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                width={{ base: "100%", md: "100%" }}
-              >
-                <Text fontSize={{ base: "xs", md: "sm" }}>
-                  DAO-Based Evolution: Token holders can propose and vote on
-                  Manus' future direction.
-                </Text>
-              </Box>
-            </GridItem>
+            <ScrollAnimation animationType="zoomIn" delay={0.8} duration={0.8}>
+              <GridItem>
+                <Box
+                  p={{ base: 4, md: 6 }}
+                  bg="rgba(84, 84, 120, 0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
+                  width={{ base: "100%", md: "100%" }}
+                  transition="all 0.3s ease"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+                    borderColor: "rgba(155, 155, 255, 0.3)",
+                  }}
+                >
+                  <Text fontSize={{ base: "xs", md: "sm" }} cursor="default">
+                    DAO-Based Evolution: Token holders can propose and vote on
+                    Manus' future direction.
+                  </Text>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
           </Grid>
         </Container>
       </Box>

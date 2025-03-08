@@ -11,6 +11,7 @@ import {
   useBreakpointValue,
   VStack,
 } from "@chakra-ui/react";
+import ScrollAnimation from "../ui/ScrollAnimation";
 
 /**
  * Roadmap Section Component
@@ -93,237 +94,52 @@ export default function RoadmapSection() {
         }}
       >
         <Container maxW="container.xl">
-          <Heading
-            textAlign="center"
-            mb={{ base: 8, md: 16 }}
-            color="white"
-            fontSize={{ base: "2xl", md: "3xl" }}
-          >
-            Roadmap
-          </Heading>
+          <ScrollAnimation animationType="fadeIn" duration={1}>
+            <Heading
+              textAlign="center"
+              mb={{ base: 8, md: 16 }}
+              color="white"
+              fontSize={{ base: "2xl", md: "3xl" }}
+            >
+              Roadmap
+            </Heading>
+          </ScrollAnimation>
 
           {/* 移动端使用垂直布局 */}
           {isMobile ? (
             <VStack spacing={10} align="stretch" mt={6} px={4}>
               {/* Q1 2025 */}
-              <Box
-                mb={6}
-                bg="rgba(0,0,0,0.3)"
-                p={6}
-                borderRadius="md"
-                borderLeft="4px solid"
-                borderColor="purple.300"
-              >
-                <Heading
-                  fontSize="xl"
-                  mb={3}
-                  color="purple.300"
-                  fontFamily="var(--font-jersey)"
+              <ScrollAnimation animationType="slideInFromLeft" delay={0.2}>
+                <Box
+                  mb={6}
+                  bg="rgba(0,0,0,0.3)"
+                  p={6}
+                  borderRadius="md"
+                  borderLeft="4px solid"
+                  borderColor="purple.300"
                 >
-                  Q1 2025
-                </Heading>
-                <Heading
-                  fontSize="lg"
-                  mb={4}
-                  color="white"
-                  fontFamily="var(--font-jersey)"
-                >
-                  Genesis
-                </Heading>
-                <UnorderedList
-                  spacing={2}
-                  ml={5}
-                  color="whiteAlpha.900"
-                  fontSize="sm"
-                >
-                  <ListItem>
-                    Launch official community channels (Twitter / Telegram).
-                  </ListItem>
-                  <ListItem>
-                    Release the first batch of Manus NFT avatars, granting
-                    holders priority participation in ecosystem development.
-                  </ListItem>
-                  <ListItem>
-                    Initiate Fair Launch, distributing $MANUS tokens.
-                  </ListItem>
-                </UnorderedList>
-              </Box>
-
-              {/* Q2 2025 */}
-              <Box
-                mb={6}
-                bg="rgba(0,0,0,0.3)"
-                p={6}
-                borderRadius="md"
-                borderLeft="4px solid"
-                borderColor="blue.300"
-              >
-                <Heading
-                  fontSize="xl"
-                  mb={3}
-                  color="blue.300"
-                  fontFamily="var(--font-jersey)"
-                >
-                  Q2 2025
-                </Heading>
-                <Heading
-                  fontSize="lg"
-                  mb={4}
-                  color="white"
-                  fontFamily="var(--font-jersey)"
-                >
-                  Ecosystem Expansion
-                </Heading>
-                <UnorderedList
-                  spacing={2}
-                  ml={5}
-                  color="whiteAlpha.900"
-                  fontSize="sm"
-                >
-                  <ListItem>
-                    Launch Manus AI training platform, allowing users to
-                    contribute data and fine-tune AI models.
-                  </ListItem>
-                  <ListItem>
-                    Introduce Meme-to-Earn, incentivizing community creativity
-                    and content sharing.
-                  </ListItem>
-                  <ListItem>
-                    Partner with Web3 DEXs to provide liquidity support.
-                  </ListItem>
-                  <ListItem>
-                    Officially list $MANUS on DEXs, enabling open trading pairs.
-                  </ListItem>
-                </UnorderedList>
-              </Box>
-
-              {/* Q3 2025 */}
-              <Box
-                mb={6}
-                bg="rgba(0,0,0,0.3)"
-                p={6}
-                borderRadius="md"
-                borderLeft="4px solid"
-                borderColor="green.300"
-              >
-                <Heading
-                  fontSize="xl"
-                  mb={3}
-                  color="green.300"
-                  fontFamily="var(--font-jersey)"
-                >
-                  Q3 2025
-                </Heading>
-                <Heading
-                  fontSize="lg"
-                  mb={4}
-                  color="white"
-                  fontFamily="var(--font-jersey)"
-                >
-                  AI Evolution
-                </Heading>
-                <UnorderedList
-                  spacing={2}
-                  ml={5}
-                  color="whiteAlpha.900"
-                  fontSize="sm"
-                >
-                  <ListItem>
-                    Deploy Manus AI Model V1 and open its API to the community.
-                  </ListItem>
-                  <ListItem>
-                    Launch AI training leaderboard to encourage participation in
-                    Train-to-Earn mining.
-                  </ListItem>
-                  <ListItem>
-                    Initiate DAO governance, allowing community members to vote
-                    on key project directions.
-                  </ListItem>
-                  <ListItem>
-                    Form strategic partnerships with other Web3 projects to
-                    expand the Manus ecosystem.
-                  </ListItem>
-                </UnorderedList>
-              </Box>
-
-              {/* Q4 2025 */}
-              <Box
-                mb={6}
-                bg="rgba(0,0,0,0.3)"
-                p={6}
-                borderRadius="md"
-                borderLeft="4px solid"
-                borderColor="orange.300"
-              >
-                <Heading
-                  fontSize="xl"
-                  mb={3}
-                  color="orange.300"
-                  fontFamily="var(--font-jersey)"
-                >
-                  Q4 2025
-                </Heading>
-                <Heading
-                  fontSize="lg"
-                  mb={4}
-                  color="white"
-                  fontFamily="var(--font-jersey)"
-                >
-                  Mass Adoption
-                </Heading>
-                <UnorderedList
-                  spacing={2}
-                  ml={5}
-                  color="whiteAlpha.900"
-                  fontSize="sm"
-                >
-                  <ListItem>
-                    Manus AI vs. GPT Battle: Organize a community challenge to
-                    compare decentralized AI vs. centralized AI.
-                  </ListItem>
-                  <ListItem>
-                    Release AI-generated NFTs, exploring the intersection of AI
-                    and NFTs.
-                  </ListItem>
-                  <ListItem>
-                    Open Manus ecosystem integration, enabling more Web3
-                    projects to adopt Manus AI models.
-                  </ListItem>
-                  <ListItem>
-                    Implement cross-chain functionality, enhancing scalability
-                    and multi-chain interoperability.
-                  </ListItem>
-                </UnorderedList>
-              </Box>
-            </VStack>
-          ) : (
-            // 桌面端使用原有的布局
-            <Grid
-              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-              gap={10}
-              mt={10}
-              paddingTop={"100px"}
-            >
-              {/* Q1 2025 */}
-              <GridItem position={"absolute"} left={"120px"}>
-                <Box mb={10}>
                   <Heading
-                    fontSize="2xl"
-                    mb={4}
+                    fontSize="xl"
+                    mb={3}
                     color="purple.300"
                     fontFamily="var(--font-jersey)"
                   >
                     Q1 2025
                   </Heading>
                   <Heading
-                    fontSize="xl"
-                    mb={6}
+                    fontSize="lg"
+                    mb={4}
                     color="white"
                     fontFamily="var(--font-jersey)"
                   >
                     Genesis
                   </Heading>
-                  <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                  <UnorderedList
+                    spacing={2}
+                    ml={5}
+                    color="whiteAlpha.900"
+                    fontSize="sm"
+                  >
                     <ListItem>
                       Launch official community channels (Twitter / Telegram).
                     </ListItem>
@@ -336,28 +152,40 @@ export default function RoadmapSection() {
                     </ListItem>
                   </UnorderedList>
                 </Box>
-              </GridItem>
+              </ScrollAnimation>
 
               {/* Q2 2025 */}
-              <GridItem position={"absolute"} right={"20px"} top={"820px"}>
-                <Box mb={10}>
+              <ScrollAnimation animationType="slideInFromRight" delay={0.2}>
+                <Box
+                  mb={6}
+                  bg="rgba(0,0,0,0.3)"
+                  p={6}
+                  borderRadius="md"
+                  borderLeft="4px solid"
+                  borderColor="blue.300"
+                >
                   <Heading
-                    fontSize="2xl"
-                    mb={4}
+                    fontSize="xl"
+                    mb={3}
                     color="blue.300"
                     fontFamily="var(--font-jersey)"
                   >
                     Q2 2025
                   </Heading>
                   <Heading
-                    fontSize="xl"
-                    mb={6}
+                    fontSize="lg"
+                    mb={4}
                     color="white"
                     fontFamily="var(--font-jersey)"
                   >
                     Ecosystem Expansion
                   </Heading>
-                  <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                  <UnorderedList
+                    spacing={2}
+                    ml={5}
+                    color="whiteAlpha.900"
+                    fontSize="sm"
+                  >
                     <ListItem>
                       Launch Manus AI training platform, allowing users to
                       contribute data and fine-tune AI models.
@@ -375,28 +203,40 @@ export default function RoadmapSection() {
                     </ListItem>
                   </UnorderedList>
                 </Box>
-              </GridItem>
+              </ScrollAnimation>
 
               {/* Q3 2025 */}
-              <GridItem position={"absolute"} top={"1100px"} left={"120px"}>
-                <Box mb={10}>
+              <ScrollAnimation animationType="slideInFromLeft" delay={0.2}>
+                <Box
+                  mb={6}
+                  bg="rgba(0,0,0,0.3)"
+                  p={6}
+                  borderRadius="md"
+                  borderLeft="4px solid"
+                  borderColor="green.300"
+                >
                   <Heading
-                    fontSize="2xl"
-                    mb={4}
+                    fontSize="xl"
+                    mb={3}
                     color="green.300"
                     fontFamily="var(--font-jersey)"
                   >
                     Q3 2025
                   </Heading>
                   <Heading
-                    fontSize="xl"
-                    mb={6}
+                    fontSize="lg"
+                    mb={4}
                     color="white"
                     fontFamily="var(--font-jersey)"
                   >
                     AI Evolution
                   </Heading>
-                  <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                  <UnorderedList
+                    spacing={2}
+                    ml={5}
+                    color="whiteAlpha.900"
+                    fontSize="sm"
+                  >
                     <ListItem>
                       Deploy Manus AI Model V1 and open its API to the
                       community.
@@ -415,28 +255,40 @@ export default function RoadmapSection() {
                     </ListItem>
                   </UnorderedList>
                 </Box>
-              </GridItem>
+              </ScrollAnimation>
 
               {/* Q4 2025 */}
-              <GridItem position={"absolute"} top={"1430px"} right={"20px"}>
-                <Box mb={10}>
+              <ScrollAnimation animationType="slideInFromRight" delay={0.2}>
+                <Box
+                  mb={6}
+                  bg="rgba(0,0,0,0.3)"
+                  p={6}
+                  borderRadius="md"
+                  borderLeft="4px solid"
+                  borderColor="orange.300"
+                >
                   <Heading
-                    fontSize="2xl"
-                    mb={4}
+                    fontSize="xl"
+                    mb={3}
                     color="orange.300"
                     fontFamily="var(--font-jersey)"
                   >
                     Q4 2025
                   </Heading>
                   <Heading
-                    fontSize="xl"
-                    mb={6}
+                    fontSize="lg"
+                    mb={4}
                     color="white"
                     fontFamily="var(--font-jersey)"
                   >
                     Mass Adoption
                   </Heading>
-                  <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                  <UnorderedList
+                    spacing={2}
+                    ml={5}
+                    color="whiteAlpha.900"
+                    fontSize="sm"
+                  >
                     <ListItem>
                       Manus AI vs. GPT Battle: Organize a community challenge to
                       compare decentralized AI vs. centralized AI.
@@ -455,6 +307,175 @@ export default function RoadmapSection() {
                     </ListItem>
                   </UnorderedList>
                 </Box>
+              </ScrollAnimation>
+            </VStack>
+          ) : (
+            // 桌面端使用原有的布局
+            <Grid
+              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+              gap={10}
+              mt={10}
+              paddingTop={"100px"}
+            >
+              {/* Q1 2025 */}
+              <GridItem position={"absolute"} left={"120px"}>
+                <ScrollAnimation animationType="slideInFromLeft" delay={0.2}>
+                  <Box mb={10}>
+                    <Heading
+                      fontSize="2xl"
+                      mb={4}
+                      color="purple.300"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Q1 2025
+                    </Heading>
+                    <Heading
+                      fontSize="xl"
+                      mb={6}
+                      color="white"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Genesis
+                    </Heading>
+                    <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                      <ListItem>
+                        Launch official community channels (Twitter / Telegram).
+                      </ListItem>
+                      <ListItem>
+                        Release the first batch of Manus NFT avatars, granting
+                        holders priority participation in ecosystem development.
+                      </ListItem>
+                      <ListItem>
+                        Initiate Fair Launch, distributing $MANUS tokens.
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                </ScrollAnimation>
+              </GridItem>
+
+              {/* Q2 2025 */}
+              <GridItem position={"absolute"} right={"20px"} top={"820px"}>
+                <ScrollAnimation animationType="slideInFromRight" delay={0.2}>
+                  <Box mb={10}>
+                    <Heading
+                      fontSize="2xl"
+                      mb={4}
+                      color="blue.300"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Q2 2025
+                    </Heading>
+                    <Heading
+                      fontSize="xl"
+                      mb={6}
+                      color="white"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Ecosystem Expansion
+                    </Heading>
+                    <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                      <ListItem>
+                        Launch Manus AI training platform, allowing users to
+                        contribute data and fine-tune AI models.
+                      </ListItem>
+                      <ListItem>
+                        Introduce Meme-to-Earn, incentivizing community
+                        creativity and content sharing.
+                      </ListItem>
+                      <ListItem>
+                        Partner with Web3 DEXs to provide liquidity support.
+                      </ListItem>
+                      <ListItem>
+                        Officially list $MANUS on DEXs, enabling open trading
+                        pairs.
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                </ScrollAnimation>
+              </GridItem>
+
+              {/* Q3 2025 */}
+              <GridItem position={"absolute"} top={"1100px"} left={"120px"}>
+                <ScrollAnimation animationType="slideInFromLeft" delay={0.2}>
+                  <Box mb={10}>
+                    <Heading
+                      fontSize="2xl"
+                      mb={4}
+                      color="green.300"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Q3 2025
+                    </Heading>
+                    <Heading
+                      fontSize="xl"
+                      mb={6}
+                      color="white"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      AI Evolution
+                    </Heading>
+                    <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                      <ListItem>
+                        Deploy Manus AI Model V1 and open its API to the
+                        community.
+                      </ListItem>
+                      <ListItem>
+                        Launch AI training leaderboard to encourage
+                        participation in Train-to-Earn mining.
+                      </ListItem>
+                      <ListItem>
+                        Initiate DAO governance, allowing community members to
+                        vote on key project directions.
+                      </ListItem>
+                      <ListItem>
+                        Form strategic partnerships with other Web3 projects to
+                        expand the Manus ecosystem.
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                </ScrollAnimation>
+              </GridItem>
+
+              {/* Q4 2025 */}
+              <GridItem position={"absolute"} top={"1430px"} right={"20px"}>
+                <ScrollAnimation animationType="slideInFromRight" delay={0.2}>
+                  <Box mb={10}>
+                    <Heading
+                      fontSize="2xl"
+                      mb={4}
+                      color="orange.300"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Q4 2025
+                    </Heading>
+                    <Heading
+                      fontSize="xl"
+                      mb={6}
+                      color="white"
+                      fontFamily="var(--font-jersey)"
+                    >
+                      Mass Adoption
+                    </Heading>
+                    <UnorderedList spacing={3} ml={5} color="whiteAlpha.900">
+                      <ListItem>
+                        Manus AI vs. GPT Battle: Organize a community challenge
+                        to compare decentralized AI vs. centralized AI.
+                      </ListItem>
+                      <ListItem>
+                        Release AI-generated NFTs, exploring the intersection of
+                        AI and NFTs.
+                      </ListItem>
+                      <ListItem>
+                        Open Manus ecosystem integration, enabling more Web3
+                        projects to adopt Manus AI models.
+                      </ListItem>
+                      <ListItem>
+                        Implement cross-chain functionality, enhancing
+                        scalability and multi-chain interoperability.
+                      </ListItem>
+                    </UnorderedList>
+                  </Box>
+                </ScrollAnimation>
               </GridItem>
             </Grid>
           )}

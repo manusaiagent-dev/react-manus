@@ -9,6 +9,7 @@ import {
   Text,
   useBreakpointValue,
 } from "@chakra-ui/react";
+import ScrollAnimation from "../ui/ScrollAnimation";
 
 /**
  * Gameplay Section Component
@@ -81,7 +82,7 @@ export default function GameplaySection() {
           right: 0,
           bottom: 0,
           background:
-            "linear-gradient(to bottom,rgba(10, 10, 20, 0.73),rgba(15, 23, 41, 0.55),rgba(10, 10, 20, 0.43))",
+            "linear-gradient(to bottom,rgba(10, 10, 20, 0.73),rgba(15, 23, 41, 0.8),rgba(10, 10, 20, 0.64))",
           opacity: 0.85,
           zIndex: -1,
         }}
@@ -91,15 +92,18 @@ export default function GameplaySection() {
           position="relative"
           paddingTop={{ base: "100px", md: "390px" }}
         >
-          <Heading
-            textAlign="center"
-            mb={{ base: 8, md: 16 }}
-            bgGradient="linear(to-r, cyan.400, purple.500)"
-            bgClip="text"
-            fontSize={{ base: "2xl", md: "3xl" }}
-          >
-            How to Play
-          </Heading>
+          <ScrollAnimation animationType="fadeIn" duration={1.2}>
+            <Heading
+              textAlign="center"
+              mb={{ base: 8, md: 16 }}
+              bgGradient="linear(to-r, cyan.400, purple.500)"
+              bgClip="text"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              cursor="default"
+            >
+              How to Play
+            </Heading>
+          </ScrollAnimation>
 
           <Grid
             templateColumns={{ base: "1fr", md: "repeat(3, 1fr)" }}
@@ -107,106 +111,176 @@ export default function GameplaySection() {
             paddingTop={{ base: "30px", md: "50px" }}
           >
             {/* Card 1 - Battle GPT */}
-            <GridItem>
-              <Box
-                p={6}
-                bg="rgba(20,20,40,0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                transition="all 0.3s"
-                width={{ base: "100%", md: "80%" }}
-                height={{ base: "auto", md: "auto" }}
-                position="relative"
-                _hover={{
-                  transform: "translateY(-5px)",
-                  boxShadow: "0 0 20px rgba(100,100,255,0.2)",
-                }}
-              >
-                <Heading size="md" mb={4} color="cyan.400" textAlign="center">
-                  Battle GPT
-                </Heading>
-                <Text
-                  fontSize="sm"
-                  textAlign="center"
-                  width="100%"
+            <ScrollAnimation
+              animationType="slideInFromBottom"
+              delay={0.3}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={6}
+                  bg="rgba(20,20,40,0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
+                  transition="all 0.3s"
+                  width={{ base: "100%", md: "80%" }}
+                  height={{ base: "auto", md: "auto" }}
                   position="relative"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 0 20px rgba(100,100,255,0.2)",
+                  }}
                 >
-                  Compete in community events where Manus-trained AI models
-                  battle GPT-generated content.
-                </Text>
-              </Box>
-            </GridItem>
+                  <ScrollAnimation
+                    animationType="fadeIn"
+                    delay={0.5}
+                    duration={0.8}
+                  >
+                    <Heading
+                      size="md"
+                      mb={4}
+                      color="cyan.400"
+                      textAlign="center"
+                      cursor="default"
+                    >
+                      Battle GPT
+                    </Heading>
+                  </ScrollAnimation>
+                  <ScrollAnimation
+                    animationType="fadeIn"
+                    delay={0.7}
+                    duration={0.8}
+                  >
+                    <Text
+                      fontSize="sm"
+                      textAlign="center"
+                      width="100%"
+                      position="relative"
+                      cursor="default"
+                    >
+                      Compete in community events where Manus-trained AI models
+                      battle GPT-generated content.
+                    </Text>
+                  </ScrollAnimation>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
 
             {/* Card 2 - Train & Earn */}
-            <GridItem>
-              <Box
-                p={6}
-                bg="rgba(20,20,40,0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                width="100%"
-                height={{ base: "auto", md: "auto" }}
-                position="relative"
-                transition="all 0.3s"
-                _hover={{
-                  transform: "translateY(-5px)",
-                  boxShadow: "0 0 20px rgba(100,100,255,0.2)",
-                }}
-              >
-                <Heading
-                  size="md"
-                  mb={4}
-                  color="cyan.400"
-                  textAlign="center"
+            <ScrollAnimation
+              animationType="slideInFromBottom"
+              delay={0.5}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={6}
+                  bg="rgba(20,20,40,0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
                   width="100%"
-                >
-                  Train & Earn
-                </Heading>
-                <Text
-                  fontSize="sm"
-                  textAlign="center"
-                  width="100%"
+                  height={{ base: "auto", md: "auto" }}
                   position="relative"
+                  transition="all 0.3s"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 0 20px rgba(100,100,255,0.2)",
+                  }}
                 >
-                  $MANUSCOIN Earn $MANUS by contributing data, providing
-                  feedback, and fine-tuning the AI models.
-                </Text>
-              </Box>
-            </GridItem>
+                  <ScrollAnimation
+                    animationType="fadeIn"
+                    delay={0.7}
+                    duration={0.8}
+                  >
+                    <Heading
+                      size="md"
+                      mb={4}
+                      color="cyan.400"
+                      textAlign="center"
+                      width="100%"
+                      cursor="default"
+                    >
+                      Train & Earn
+                    </Heading>
+                  </ScrollAnimation>
+                  <ScrollAnimation
+                    animationType="fadeIn"
+                    delay={0.9}
+                    duration={0.8}
+                  >
+                    <Text
+                      fontSize="sm"
+                      textAlign="center"
+                      width="100%"
+                      position="relative"
+                      cursor="default"
+                    >
+                      $MANUSCOIN Earn $MANUS by contributing data, providing
+                      feedback, and fine-tuning the AI models.
+                    </Text>
+                  </ScrollAnimation>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
 
             {/* Card 3 - Meme-to-Earn */}
-            <GridItem>
-              <Box
-                p={6}
-                bg="rgba(20,20,40,0.3)"
-                borderRadius="lg"
-                border="1px solid rgba(100,100,255,0.1)"
-                backdropFilter="blur(5px)"
-                width="100%"
-                height={{ base: "auto", md: "auto" }}
-                position="relative"
-                transition="all 0.3s"
-                _hover={{
-                  transform: "translateY(-5px)",
-                  boxShadow: "0 0 20px rgba(100,100,255,0.2)",
-                }}
-              >
-                <Heading size="md" mb={4} color="cyan.400" textAlign="center">
-                  Meme-to-Earn
-                </Heading>
-                <Text
-                  fontSize="sm"
-                  textAlign="center"
+            <ScrollAnimation
+              animationType="slideInFromBottom"
+              delay={0.7}
+              duration={0.8}
+            >
+              <GridItem>
+                <Box
+                  p={6}
+                  bg="rgba(20,20,40,0.3)"
+                  borderRadius="lg"
+                  border="1px solid rgba(100,100,255,0.1)"
+                  backdropFilter="blur(5px)"
                   width="100%"
+                  height={{ base: "auto", md: "auto" }}
                   position="relative"
+                  transition="all 0.3s"
+                  _hover={{
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 0 20px rgba(100,100,255,0.2)",
+                  }}
                 >
-                  Create and share Manus-themed memes to earn rewards from the
-                  community.
-                </Text>
-              </Box>
-            </GridItem>
+                  <ScrollAnimation
+                    animationType="fadeIn"
+                    delay={0.9}
+                    duration={0.8}
+                  >
+                    <Heading
+                      size="md"
+                      mb={4}
+                      color="cyan.400"
+                      textAlign="center"
+                      cursor="default"
+                    >
+                      Meme-to-Earn
+                    </Heading>
+                  </ScrollAnimation>
+                  <ScrollAnimation
+                    animationType="fadeIn"
+                    delay={1.1}
+                    duration={0.8}
+                  >
+                    <Text
+                      fontSize="sm"
+                      textAlign="center"
+                      width="100%"
+                      position="relative"
+                      cursor="default"
+                    >
+                      Create and share Manus-themed memes to earn rewards from
+                      the community.
+                    </Text>
+                  </ScrollAnimation>
+                </Box>
+              </GridItem>
+            </ScrollAnimation>
           </Grid>
         </Container>
       </Box>

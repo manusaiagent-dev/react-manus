@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "@chakra-ui/react";
-import Navbar from "./Navbar";
+import NavbarEnhanced from "./NavbarEnhanced";
 import Footer from "./Footer";
 import { AppProvider } from "../../stores/context";
 
@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <AppProvider>
       <Box>
-        <Navbar />
+        <NavbarEnhanced />
         <Box as="main">{children}</Box>
         <Footer />
       </Box>

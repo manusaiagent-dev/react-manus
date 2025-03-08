@@ -15,6 +15,7 @@ import {
 import Decimal from "decimal.js"; // 引入 Decimal.js 处理高精度计算
 import { observer } from "mobx-react-lite";
 import { useAppContext } from "../../stores/context";
+import ScrollAnimation from "../ui/ScrollAnimation";
 
 const CHAIN_CONFIG: {
   [key: string]: {
@@ -166,48 +167,50 @@ const TokenSaleWidget = () => {
           {/* <Text fontSize="lg" fontWeight="600" color="gray.700"> */}
           {/* Token price increase in: { perShareDisplay},{ totalDisplay } */}
         </Text>
-        <HStack
-          spacing={{ base: 2, sm: 6 }}
-          justify="center"
-          w="full"
-          flexWrap="nowrap"
-          overflowX={{ base: "auto", sm: "visible" }}
-          pb={{ base: 2, sm: 0 }}
-        >
-          {Object.entries(timeLeft).map(([unit, value]) => (
-            <VStack
-              key={unit}
-              spacing={0}
-              mb={{ base: 0, sm: 0 }}
-              minW={{ base: "60px", sm: "auto" }}
-            >
-              <Box
-                w={{ base: "55px", sm: 75 }}
-                h={{ base: 50, sm: 62 }}
-                bg="white"
-                borderRadius={4}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
+        <ScrollAnimation animationType="fadeIn" delay={0.2}>
+          <HStack
+            spacing={{ base: 2, sm: 6 }}
+            justify="center"
+            w="full"
+            flexWrap="nowrap"
+            overflowX={{ base: "auto", sm: "visible" }}
+            pb={{ base: 2, sm: 0 }}
+          >
+            {Object.entries(timeLeft).map(([unit, value]) => (
+              <VStack
+                key={unit}
+                spacing={0}
+                mb={{ base: 0, sm: 0 }}
+                minW={{ base: "60px", sm: "auto" }}
               >
-                <Text
-                  fontSize={{ base: "20px", sm: "32px" }}
-                  fontWeight="800"
-                  color="#5D5D5D"
+                <Box
+                  w={{ base: "55px", sm: 75 }}
+                  h={{ base: 50, sm: 62 }}
+                  bg="white"
+                  borderRadius={4}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
                 >
-                  {value.toString().padStart(2, "0")}
+                  <Text
+                    fontSize={{ base: "20px", sm: "32px" }}
+                    fontWeight="800"
+                    color="#5D5D5D"
+                  >
+                    {value.toString().padStart(2, "0")}
+                  </Text>
+                </Box>
+                <Text
+                  fontSize={{ base: "xs", sm: "sm" }}
+                  color="white"
+                  textTransform="capitalize"
+                >
+                  {unit}
                 </Text>
-              </Box>
-              <Text
-                fontSize={{ base: "xs", sm: "sm" }}
-                color="white"
-                textTransform="capitalize"
-              >
-                {unit}
-              </Text>
-            </VStack>
-          ))}
-        </HStack>
+              </VStack>
+            ))}
+          </HStack>
+        </ScrollAnimation>
       </VStack>
 
       {/* 募资进度 */}
@@ -222,7 +225,7 @@ const TokenSaleWidget = () => {
         >
           <Text>raised:$0.00 ETH</Text>
           <Text>$0.00 BNB</Text>
-          <Text>$0.00 SQL</Text>
+          <Text>$0.00 SOL</Text>
         </HStack>
         <Progress
           value={0}
@@ -296,28 +299,30 @@ const TokenSaleWidget = () => {
       </Flex>
 
       {/* 购买界面 */}
-      <Flex
-        justify={"center"}
-        align={"center"}
-        w={{ base: "100%", sm: "411px" }}
-        h={"44px"}
-        cursor={"not-allowed"}
-        lineHeight={"44px"}
-        background={"#737373"}
-        textAlign={"center"}
-        color={"white!important"}
-        opacity={1}
-        fontSize={{ base: "24px", sm: "26px" }}
-        fontWeight={"bold"}
-        mx="auto"
-        fontFamily="var(--font-jersey)"
-      >
-        Buy
-        <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
-          {totalTokens.toLocaleString()}
-        </Text>
-        $ManusCoin
-      </Flex>
+      <ScrollAnimation animationType="slideInFromBottom" delay={0.3}>
+        <Flex
+          justify={"center"}
+          align={"center"}
+          w={{ base: "100%", sm: "411px" }}
+          h={"44px"}
+          cursor={"not-allowed"}
+          lineHeight={"44px"}
+          background={"#737373"}
+          textAlign={"center"}
+          color={"white!important"}
+          opacity={1}
+          fontSize={{ base: "24px", sm: "26px" }}
+          fontWeight={"bold"}
+          mx="auto"
+          fontFamily="var(--font-jersey)"
+        >
+          Buy
+          <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
+            {totalTokens.toLocaleString()}
+          </Text>
+          $ManusCoin
+        </Flex>
+      </ScrollAnimation>
 
       {/* 价格提示 */}
       <Text
