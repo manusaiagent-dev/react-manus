@@ -1,11 +1,19 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
 const AppContext = createContext();
 
 export function AppProvider({ children }) {
   const [walletAddress, setWalletAddress] = useState("");
-  const [currentNetwork, setCurrentNetwork] = useState("ETH");
+  const [currentNetwork, setBaseCurrentNetwork] = useState("ETH");
 
+   // 封装 setCurrentNetwork 函数，处理 SOL 相关的设置
+   const setCurrentNetwork = useCallback((network) => {
+    if (network === "Solana" || network === "SOL") {
+      setBaseCurrentNetwork("SOL");
+    } else {
+      setBaseCurrentNetwork(network);
+    }
+  }, []);
   return (
     <AppContext.Provider
       value={{

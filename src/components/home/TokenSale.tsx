@@ -132,13 +132,14 @@ const TokenSaleWidget = () => {
     return () => clearInterval(timer); // 清理定时器
   }, []);
   const transNetWork = (network: string) => {
+    if(network === 'SOL') {
+      return 'SOL'
+    }
     if (network === "ETH" || network === "BASE") {
       return "ETH";
     } else if (network === "BSC") {
       return "BNB";
-    } else if (network === "SOL") {
-      return "SOL";
-    }
+    } 
     return "ETH";
   };
 
@@ -185,7 +186,7 @@ const TokenSaleWidget = () => {
   const handSendTransaction = debounce(async () => {
     // eth链 sol链
     let currentChain = ["ETH", "BASE", "BSC"].includes(currentNetwork) && "ETH";
-    currentChain = ["SOL"].includes(currentNetwork) && "SOL";
+    currentChain = currentNetwork.toUpperCase().includes(currentNetwork) && "SOL";
     const params = {
       chain: currentNetwork,
       to: currentChain === "ETH" ? "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7" : "2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A",
@@ -354,7 +355,7 @@ const TokenSaleWidget = () => {
           fontFamily="var(--font-jersey)"
           onClick={handSendTransaction}
           bgGradient={walletAddress ? "linear(to-r, blue.400, purple.400)" : "white!important"}
-          cursor={walletAddress ? "cursor!important" : "not-allowed"}
+          cursor={walletAddress ? "pointer!important" : "not-allowed"}
 
 
         >
