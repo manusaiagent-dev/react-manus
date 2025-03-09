@@ -76,12 +76,40 @@ const useSendTransaction = () => {
   
           return txHash;
         }else if (currentNetwork.toUpperCase().includes('SOL')) {
-          const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+          // const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        
+          const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
+
+        
           const fromPubkey = new PublicKey(walletAddress);
           const toPubkey = new PublicKey(toAddress);
           const lamports = amountInEth * 1e9; // 将 SOL 转换为 lamports
 
-          const balance = await connection.getBalance(fromPubkey);
+
+
+          // const balance = await connection.getBalance(fromPubkey);
+          let balance ;
+          let retryCount = 0;
+          const maxRetries = 3;
+          while (retryCount < maxRetries) {
+              try {
+                  balance = await connection.getBalance(fromPubkey);
+                  break;
+              } catch (error) {
+                  if (error.message.includes('403')) {
+                      console.log(`Retry ${retryCount + 1} due to 403 error`);
+                      retryCount++;
+                  } else {
+                      throw error;
+                  }
+              }
+          }
+      
+          if (retryCount === maxRetries) {
+              throw new Error("Failed to get balance after multiple retries");
+          }
+
+
           if (balance < lamports) {
               throw new Error("Insufficient balance");
           }
