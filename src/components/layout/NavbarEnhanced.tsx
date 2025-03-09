@@ -188,10 +188,11 @@ const NavbarEnhanced = () => {
           display={{ base: "flex", md: "none" }}
           onClick={onToggle}
           icon={
-            isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />
+            isOpen ? <CloseIcon w={30} h={30} /> : <HamburgerIcon w={30} h={30} />
           }
           variant="ghost"
           aria-label="Toggle Navigation"
+          color={"white"}
           _hover={{ bg: "rgba(255,255,255,0.1)" }}
           transition="all 0.3s ease"
           transform={isOpen ? "rotate(90deg)" : "rotate(0deg)"}
@@ -386,8 +387,9 @@ const NavbarEnhanced = () => {
               />
             </Box>
           </Link>
-        </HStack>
         <WalletConnector />
+
+        </HStack>
 
         {/* Mobile Menu */}
         <Collapse in={isOpen} animateOpacity style={{ width: "100%" }}>

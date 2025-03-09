@@ -5,6 +5,7 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
   const [walletAddress, setWalletAddress] = useState("");
   const [currentNetwork, setBaseCurrentNetwork] = useState("ETH");
+  const [loading, setLoading] = useState(false);
 
    // 封装 setCurrentNetwork 函数，处理 SOL 相关的设置
    const setCurrentNetwork = useCallback((network) => {
@@ -20,7 +21,9 @@ export function AppProvider({ children }) {
         walletAddress,
         currentNetwork,
         setWalletAddress,
-        setCurrentNetwork
+        setCurrentNetwork,
+        setLoading,
+        loading,
       }}
     >
       {children}

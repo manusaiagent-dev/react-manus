@@ -6,12 +6,14 @@ import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransa
 
 const useSendTransaction = () => {
   const toast = useToast();
-  const { walletAddress, currentNetwork } = useAppContext();
+  const { walletAddress, currentNetwork, setLoading } = useAppContext();
 
   const sendTransaction = useCallback(
     async (toAddress: string, amountInEth: number) => {
       console.log(currentNetwork,'currentNetwork_sendTransaction')
       if (!walletAddress) {
+        setLoading(false);
+
         toast({
           title: "Error",
           description: "Please connect your wallet first",
@@ -34,6 +36,8 @@ const useSendTransaction = () => {
               isClosable: true,
               position: "top-right",
             });
+            setLoading(false);
+
             return;
           }
           const web3 = new Web3(window.ethereum);
@@ -52,6 +56,7 @@ const useSendTransaction = () => {
             gasPrice: web3.utils.toWei("20", "gwei"), // 20 Gwei
           });
           if (balance < requiredBalance) {
+            setLoading(false);
             throw new Error("Insufficient balance");
           }
   
@@ -73,7 +78,8 @@ const useSendTransaction = () => {
             isClosable: true,
             position: "top-right",
           });
-  
+
+          setLoading(false);
           return txHash;
         }else if (currentNetwork.toUpperCase().includes('SOL')) {
           // const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
@@ -139,6 +145,7 @@ const useSendTransaction = () => {
               isClosable: true,
               position: "top-right",
           });
+          setLoading(false);
 
           return signature;
       } else {
@@ -150,10 +157,13 @@ const useSendTransaction = () => {
               isClosable: true,
               position: "top-right",
           });
+          setLoading(false);
+
           return null;
       }
       } catch (error) {
         console.error("Transaction failed:", error);
+        setLoading(false);
         toast({
           title: "Transaction Failed",
           description: error.message,

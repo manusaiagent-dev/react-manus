@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, VStack, HStack, Text, Progress, Flex, Slider, SliderTrack, SliderFilledTrack, SliderThumb, useBreakpointValue } from "@chakra-ui/react";
+import { Box, VStack, HStack, Text, Progress, Flex, Slider, SliderTrack, SliderFilledTrack, SliderThumb, useBreakpointValue, Button } from "@chakra-ui/react";
 import Decimal from "decimal.js"; // 引入 Decimal.js 处理高精度计算
 import { debounce } from "lodash";
 
@@ -48,7 +48,7 @@ const calculateDaysPassed = (startDate: Date, endDate: Date) => {
 const TokenSaleWidget = () => {
   // 设置固定目标时间（2025-03-17）
   const [shares, setShares] = useState(5);
-  const { currentNetwork, walletAddress } = useAppContext();
+  const { currentNetwork, walletAddress, setLoading, loading } = useAppContext();
   const sendTransaction = useCrossChainTransfer();
 
   const [progress, setProgress] = useState(0); // 进度
@@ -132,14 +132,14 @@ const TokenSaleWidget = () => {
     return () => clearInterval(timer); // 清理定时器
   }, []);
   const transNetWork = (network: string) => {
-    if(network === 'SOL') {
-      return 'SOL'
+    if (network === "SOL") {
+      return "SOL";
     }
     if (network === "ETH" || network === "BASE") {
       return "ETH";
     } else if (network === "BSC") {
       return "BNB";
-    } 
+    }
     return "ETH";
   };
 
@@ -185,6 +185,7 @@ const TokenSaleWidget = () => {
   // 转账交易
   const handSendTransaction = debounce(async () => {
     // eth链 sol链
+    setLoading(true);
     let currentChain = ["ETH", "BASE", "BSC"].includes(currentNetwork) && "ETH";
     currentChain = currentNetwork.toUpperCase().includes(currentNetwork) && "SOL";
     const params = {
@@ -339,9 +340,13 @@ const TokenSaleWidget = () => {
 
       {/* 购买界面 */}
       <ScrollAnimation animationType="slideInFromBottom" delay={0.3}>
-        <Flex
-          justify={"center"}
-          align={"center"}
+        <Button
+          disabled={!walletAddress}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+          isLoading={loading}
+          loadingText={"Buy $ManusCoin"}
           w={{ base: "100%", sm: "411px" }}
           h={"44px"}
           lineHeight={"44px"}
@@ -356,15 +361,15 @@ const TokenSaleWidget = () => {
           onClick={handSendTransaction}
           bgGradient={walletAddress ? "linear(to-r, blue.400, purple.400)" : "white!important"}
           cursor={walletAddress ? "pointer!important" : "not-allowed"}
-
-
+          _hover={{ bg: walletAddress ? "linear(to-r, blue.400, purple.400)" : "#737373!important" }}
+          _active={{ bg: walletAddress ? "linear(to-r, blue.400, purple.400)" : "#737373!important" }}
         >
           Buy &nbsp;
           {/* <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
             {totalTokens.toLocaleString()}
           </Text> */}
           $ManusCoin
-        </Flex>
+        </Button>
       </ScrollAnimation>
 
       {/* 价格提示 */}
