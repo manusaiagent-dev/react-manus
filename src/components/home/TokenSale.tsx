@@ -136,6 +136,8 @@ const TokenSaleWidget = () => {
       return "ETH";
     } else if (network === "BSC") {
       return "BNB";
+    } else if (network === "SOL") {
+      return "SOL";
     }
     return "ETH";
   };
