@@ -188,7 +188,11 @@ const NavbarEnhanced = () => {
           display={{ base: "flex", md: "none" }}
           onClick={onToggle}
           icon={
-            isOpen ? <CloseIcon w={30} h={30} /> : <HamburgerIcon w={30} h={30} />
+            isOpen ? (
+              <CloseIcon w={30} h={30} />
+            ) : (
+              <HamburgerIcon w={30} h={30} />
+            )
           }
           variant="ghost"
           aria-label="Toggle Navigation"
@@ -259,7 +263,7 @@ const NavbarEnhanced = () => {
               },
             }}
           >
-            How To Use Bridge
+            How To Play
           </Link>
           <Link
             href="#token-detail"
@@ -387,8 +391,7 @@ const NavbarEnhanced = () => {
               />
             </Box>
           </Link>
-        <WalletConnector />
-
+          <WalletConnector />
         </HStack>
 
         {/* Mobile Menu */}
@@ -451,7 +454,7 @@ const NavbarEnhanced = () => {
                 }}
                 borderRadius="md"
               >
-                How To Use Bridge
+                How To Play
               </Link>
               <Link
                 href="#token-detail"
