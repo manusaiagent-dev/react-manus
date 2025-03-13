@@ -102,15 +102,41 @@ const NavbarEnhanced = () => {
       setScrolled(scrollY > 20);
 
       // 检测当前活动的部分
-      const sections = ["about", "gameplay", "token-detail", "roadmap", "faq"];
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom >= 100) {
-            setActiveSection(section);
-            break;
+      const sections = [
+        "about",
+        "gameplay",
+        "token-detail",
+        "roadmap",
+        "disclaimer",
+      ];
+
+      // 首先检查是否滚动到页面底部，如果是，则激活最后一个部分（disclaimer）
+      const isAtBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+      if (isAtBottom) {
+        setActiveSection("disclaimer");
+      } else {
+        // 否则，使用常规的部分检测逻辑
+        let foundActiveSection = false;
+        for (const section of sections) {
+          const element = document.getElementById(section);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            // 修改检测条件，使其更宽松
+            if (rect.top <= 150 && rect.bottom >= 50) {
+              setActiveSection(section);
+              foundActiveSection = true;
+              break;
+            }
           }
+        }
+
+        // 如果没有找到活动部分，并且滚动位置接近页面底部，则激活disclaimer
+        if (
+          !foundActiveSection &&
+          window.scrollY > document.body.offsetHeight - window.innerHeight - 300
+        ) {
+          setActiveSection("disclaimer");
         }
       }
     };
@@ -322,9 +348,9 @@ const NavbarEnhanced = () => {
             Roadmap
           </Link>
           <Link
-            href="#faq"
+            href="#disclaimer"
             fontWeight="medium"
-            color={activeSection === "faq" ? "cyan.300" : "white"}
+            color={activeSection === "disclaimer" ? "cyan.300" : "white"}
             fontFamily="var(--font-jersey)"
             position="relative"
             _hover={{
@@ -335,7 +361,7 @@ const NavbarEnhanced = () => {
               "&::after": {
                 content: '""',
                 position: "absolute",
-                width: activeSection === "faq" ? "100%" : "0%",
+                width: activeSection === "disclaimer" ? "100%" : "0%",
                 height: "2px",
                 bottom: "-4px",
                 left: "0",
@@ -347,13 +373,13 @@ const NavbarEnhanced = () => {
               },
             }}
           >
-            FAQ
+            Disclaimer
           </Link>
         </HStack>
 
         {/* Social Media Icons */}
         <HStack spacing={4} display={{ base: "none", md: "flex" }} mr={4}>
-          <Link href="" isExternal>
+          <Link href="https://x.com/ManusToken" isExternal>
             <Box
               bg="black"
               borderRadius="full"
@@ -372,7 +398,7 @@ const NavbarEnhanced = () => {
               />
             </Box>
           </Link>
-          <Link href="" isExternal>
+          <Link href="https://t.me/manustoken" isExternal>
             <Box
               bg="#31a8db"
               borderRadius="full"
@@ -503,13 +529,15 @@ const NavbarEnhanced = () => {
                 Roadmap
               </Link>
               <Link
-                href="#faq"
+                href="#disclaimer"
                 p={2}
                 fontFamily="var(--font-jersey)"
-                color={activeSection === "faq" ? "cyan.300" : "white"}
-                borderLeft={activeSection === "faq" ? "3px solid" : "0px solid"}
+                color={activeSection === "disclaimer" ? "cyan.300" : "white"}
+                borderLeft={
+                  activeSection === "disclaimer" ? "3px solid" : "0px solid"
+                }
                 borderColor="cyan.300"
-                paddingLeft={activeSection === "faq" ? "10px" : "2px"}
+                paddingLeft={activeSection === "disclaimer" ? "10px" : "2px"}
                 transition="all 0.3s ease"
                 _hover={{
                   bg: "rgba(255,255,255,0.1)",
@@ -521,12 +549,12 @@ const NavbarEnhanced = () => {
                 }}
                 borderRadius="md"
               >
-                FAQ
+                Disclaimer
               </Link>
 
               {/* Social Media Icons - Mobile */}
               <HStack spacing={4} pt={2} pb={2} justifyContent="center">
-                <Link href="" isExternal>
+                <Link href="https://x.com/ManusToken" isExternal>
                   <Box
                     bg="black"
                     borderRadius="full"
@@ -545,7 +573,7 @@ const NavbarEnhanced = () => {
                     />
                   </Box>
                 </Link>
-                <Link href="" isExternal>
+                <Link href="https://t.me/manustoken" isExternal>
                   <Box
                     bg="#31a8db"
                     borderRadius="full"

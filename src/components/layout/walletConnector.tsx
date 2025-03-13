@@ -178,16 +178,27 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
 
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+        window.ethereum.removeListener(
+          "accountsChanged",
+          handleAccountsChanged
+        );
         window.ethereum.removeListener("chainChanged", handleChainChanged);
       }
 
       if (window.solana) {
-        window.solana.removeListener("accountChanged", handleSolanaAccountChanged);
+        window.solana.removeListener(
+          "accountChanged",
+          handleSolanaAccountChanged
+        );
         window.solana.removeListener("disconnect", handleSolanaDisconnect);
       }
     };
-  }, [handleAccountsChanged, handleChainChanged, handleSolanaAccountChanged, handleSolanaDisconnect]);
+  }, [
+    handleAccountsChanged,
+    handleChainChanged,
+    handleSolanaAccountChanged,
+    handleSolanaDisconnect,
+  ]);
 
   // 检查当前网络
   const checkNetwork = (chainId: string) => {
@@ -201,14 +212,22 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
     setCurrentNetwork(networkName);
 
     if (!network) {
-      showToast("Unsupported Network", "Please switch to a supported network", "error");
+      showToast(
+        "Unsupported Network",
+        "Please switch to a supported network",
+        "error"
+      );
     }
   };
 
   // 连接钱包
   const handleConnect = async () => {
     if (!window.ethereum && !window.solana) {
-      return showToast("Wallet Required", "Please install MetaMask or Phantom Wallet", "error");
+      return showToast(
+        "Wallet Required",
+        "Please install MetaMask or Phantom Wallet",
+        "error"
+      );
     }
 
     try {
@@ -218,7 +237,9 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
         const [account] = await window.ethereum.request({
           method: "eth_requestAccounts",
         });
-        const chainId = await window.ethereum.request({ method: "eth_chainId" });
+        const chainId = await window.ethereum.request({
+          method: "eth_chainId",
+        });
 
         checkNetwork(chainId);
         setWalletAddress(account);
@@ -247,7 +268,11 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   // 连接 Solana 钱包
   const handleSolanaConnection = async () => {
     if (!window.solana) {
-      return showToast("Wallet Required", "Please install Phantom Wallet", "error");
+      return showToast(
+        "Wallet Required",
+        "Please install Phantom Wallet",
+        "error"
+      );
     }
 
     try {
@@ -270,21 +295,32 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       });
 
       // 强制刷新账户信息
-      const [account] = await window.ethereum.request({ method: "eth_accounts" });
+      const [account] = await window.ethereum.request({
+        method: "eth_accounts",
+      });
       setWalletAddress(account);
 
       // 二次验证当前网络
-      const currentChainId = await window.ethereum.request({ method: "eth_chainId" });
+      const currentChainId = await window.ethereum.request({
+        method: "eth_chainId",
+      });
       checkNetwork(currentChainId);
 
-      showToast("Network Switched", `Connected to ${NETWORKS[network].name}`, "success");
+      showToast(
+        "Network Switched",
+        `Connected to ${NETWORKS[network].name}`,
+        "success"
+      );
     } catch (error: any) {
       handleNetworkSwitchError(error, network);
     }
   };
 
   // 处理网络切换错误
-  const handleNetworkSwitchError = async (error: any, network: keyof typeof NETWORKS) => {
+  const handleNetworkSwitchError = async (
+    error: any,
+    network: keyof typeof NETWORKS
+  ) => {
     if (error.code === 4902) {
       try {
         await addEVMNetwork(network);

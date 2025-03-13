@@ -8,7 +8,7 @@ import { Box, Container, Text, Center } from "@chakra-ui/react";
  */
 export default function Footer() {
   return (
-    <Box position="relative" bg="#121212">
+    <Box position="relative" bg="#121212" id="disclaimer">
       {/* Top Wave */}
       <Box
         position="absolute"

@@ -209,6 +209,9 @@ export default function HeroSection() {
                     fontSize={{ base: "md", md: "lg" }}
                     transition="all 0.3s ease"
                     fontFamily="var(--font-jersey)"
+                    onClick={() => {
+                      window.open("https://t.me/manustoken", "_blank");
+                    }}
                   >
                     Join Now
                   </Button>
@@ -254,7 +257,8 @@ export default function HeroSection() {
               fontWeight="bold"
               mb={2}
             >
-              Buy $ManusCoin tokens now:
+              {/* Buy $ManusCoin tokens now: */}
+              COMING SOON
             </Text>
             <TokenSale />
             <Box
