@@ -14,6 +14,8 @@ import {
   Image,
   useToast,
   keyframes,
+  Text,
+  Switch
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useAppContext } from "../../stores/context";
@@ -87,7 +89,7 @@ const NavbarEnhanced = () => {
   const [scrolled, setScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeSection, setActiveSection] = useState("");
-  const { walletAddress, currentNetwork, setWalletAddress, setCurrentNetwork } =
+  const { isTestnet, setIsTestnet } =
     useAppContext();
 
   // Change navbar background on scroll
@@ -153,6 +155,17 @@ const NavbarEnhanced = () => {
     ? `0 2px 15px rgba(0, 150, 255, ${boxShadowOpacity})`
     : "none";
 
+   // 添加测试网络切换菜单项
+   const TestnetSwitchItem = () => (
+      <Flex align={'center'}>
+        <Text mr={2}>Testnet Mode</Text>
+        <Switch
+          isChecked={isTestnet}
+          onChange={(e) => setIsTestnet(e.target.checked)}
+          colorScheme="purple"
+        />
+      </Flex>
+  );
   return (
     <Box position="fixed" width="100%" zIndex={1000}>
       <Flex
@@ -417,6 +430,7 @@ const NavbarEnhanced = () => {
               />
             </Box>
           </Link>
+          <TestnetSwitchItem />
           <WalletConnector />
         </HStack>
 
@@ -593,8 +607,13 @@ const NavbarEnhanced = () => {
                   </Box>
                 </Link>
               </HStack>
+              <Flex justify='center'>
+              <TestnetSwitchItem />
+
+              </Flex>
 
               <Box pt={2}>
+
                 <WalletConnector isMobile={true} />
               </Box>
             </VStack>

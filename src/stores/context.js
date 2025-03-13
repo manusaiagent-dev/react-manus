@@ -5,7 +5,10 @@ const AppContext = createContext();
 export function AppProvider({ children }) {
   const [walletAddress, setWalletAddress] = useState("");
   const [currentNetwork, setBaseCurrentNetwork] = useState("ETH");
+  const [isNetSol, setIsNetSol] = useState(false); // 是否是solana网络
+  const [chainId, setChainId] = useState();
   const [loading, setLoading] = useState(false);
+  const [isTestnet, setIsTestnet] = useState(false);
 
    // 封装 setCurrentNetwork 函数，处理 SOL 相关的设置
    const setCurrentNetwork = useCallback((network) => {
@@ -19,11 +22,17 @@ export function AppProvider({ children }) {
     <AppContext.Provider
       value={{
         walletAddress,
+        setIsNetSol,
+        isNetSol,
         currentNetwork,
         setWalletAddress,
         setCurrentNetwork,
         setLoading,
         loading,
+        isTestnet,
+        setIsTestnet,
+        chainId,
+        setChainId,
       }}
     >
       {children}

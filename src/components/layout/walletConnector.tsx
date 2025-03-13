@@ -1,20 +1,9 @@
 // components/WalletConnector.tsx
 "use client";
 import { useEffect, useCallback } from "react";
-import {
-  Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  Text,
-  useToast,
-  HStack,
-  Box,
-} from "@chakra-ui/react";
+import { Button, Menu, MenuButton, MenuList, MenuItem, MenuDivider, Text, useToast, HStack, Box, Switch } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
-
+import { NETWORKS, chainIdsToNames } from "@/config/networks";
 // 添加 ethereum 和 solana 类型声明
 declare global {
   interface Window {
@@ -23,80 +12,16 @@ declare global {
   }
 }
 
-const NETWORKS = {
-  ETH: {
-    chainId: "0x1", // 1
-    chainIdNumber: 1,
-    name: "ETH",
-    nativeCurrency: {
-      name: "Ethereum",
-      symbol: "ETH",
-      decimals: 18,
-    },
-    rpcUrls: [
-      "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
-      "https://eth.llamarpc.com",
-      "https://rpc.ankr.com/eth",
-    ],
-    blockExplorerUrls: ["https://etherscan.io"],
-    iconUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
-    colorScheme: "blue",
-  },
-  BSC: {
-    chainId: "0x38", // 56
-    chainIdNumber: 56,
-    name: "BSC",
-    nativeCurrency: {
-      name: "BNB",
-      symbol: "BNB",
-      decimals: 18,
-    },
-    rpcUrls: [
-      "https://bsc-dataseed.binance.org",
-      "https://bsc-dataseed1.defibit.io",
-      "https://bsc-dataseed1.ninicoin.io",
-    ],
-    blockExplorerUrls: ["https://bscscan.com"],
-    iconUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/1839.png",
-    colorScheme: "yellow",
-  },
-  BASE: {
-    chainId: "0x2105", // 8453
-    chainIdNumber: 8453,
-    name: "BASE",
-    nativeCurrency: {
-      name: "Ethereum",
-      symbol: "ETH",
-      decimals: 18,
-    },
-    rpcUrls: [
-      "https://mainnet.base.org",
-      "https://base.publicnode.com",
-      "https://1rpc.io/base",
-    ],
-    blockExplorerUrls: ["https://basescan.org"],
-    iconUrl: "https://base.org/favicon.ico",
-    colorScheme: "blue",
-  },
-  SOL: {
-    name: "SOL",
-    symbol: "SOL",
-    rpcUrls: [
-      "https://api.mainnet-beta.solana.com",
-      "https://solana-rpc.ankr.com",
-      "https://rpc.ankr.com/solana",
-    ],
-    blockExplorerUrls: ["https://explorer.solana.com"],
-    iconUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/5426.png",
-    colorScheme: "purple",
-  },
-};
-
 const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   const toast = useToast();
-  const { walletAddress, currentNetwork, setWalletAddress, setCurrentNetwork } =
-    useAppContext();
-
+  const { walletAddress, currentNetwork, setWalletAddress, setCurrentNetwork, isTestnet, isNetSol, setIsNetSol, chainId, setChainId } = useAppContext();
+  // 断开钱包
+  const handleDisconnect = () => {
+    setWalletAddress("");
+    setChainId();
+    setIsNetSol(false);
+    showToast("Disconnected", "Wallet connection terminated", "info");
+  };
   // 监听 EVM 钱包状态变化
   const handleAccountsChanged = useCallback(
     (accounts: string[]) => {
@@ -106,12 +31,13 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
         handleDisconnect();
       }
     },
-    [setWalletAddress]
+    [handleDisconnect, setWalletAddress]
   );
 
   const handleChainChanged = useCallback((chainId: string) => {
-    checkNetwork(chainId);
-  }, []);
+    // checkNetwork(chainId);
+    setChainId(chainId);
+  }, [setChainId]);
 
   // 监听 Solana 钱包状态变化
   const handleSolanaAccountChanged = useCallback((publicKey: any) => {
@@ -124,7 +50,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
 
   const handleSolanaDisconnect = useCallback(() => {
     handleDisconnect();
-  }, []);
+  }, [handleDisconnect]);
 
   // 自动重连逻辑
   useEffect(() => {
@@ -139,7 +65,8 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
           const chainId = await window.ethereum.request({
             method: "eth_chainId",
           });
-          checkNetwork(chainId);
+          // checkNetwork(chainId);
+          setChainId(chainId);
           setWalletAddress(account);
         } catch (error) {
           console.error("Auto-connect failed:", error);
@@ -152,7 +79,8 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
           const publicKey = window.solana.publicKey;
           if (publicKey) {
             setWalletAddress(publicKey.toString());
-            setCurrentNetwork("SOL");
+            setIsNetSol(true); // 是sol网络
+            setChainId()
           }
         } catch (error) {
           console.error("Solana auto-connect failed:", error);
@@ -162,7 +90,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
     };
 
     checkConnectedWallet();
-  }, [setWalletAddress, setCurrentNetwork]);
+  }, [handleDisconnect, setChainId, setIsNetSol, setWalletAddress]);
 
   // 清理事件监听
   useEffect(() => {
@@ -178,56 +106,33 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
 
     return () => {
       if (window.ethereum) {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
         window.ethereum.removeListener("chainChanged", handleChainChanged);
       }
 
       if (window.solana) {
-        window.solana.removeListener(
-          "accountChanged",
-          handleSolanaAccountChanged
-        );
+        window.solana.removeListener("accountChanged", handleSolanaAccountChanged);
         window.solana.removeListener("disconnect", handleSolanaDisconnect);
       }
     };
-  }, [
-    handleAccountsChanged,
-    handleChainChanged,
-    handleSolanaAccountChanged,
-    handleSolanaDisconnect,
-  ]);
+  }, [handleAccountsChanged, handleChainChanged, handleSolanaAccountChanged, handleSolanaDisconnect]);
 
   // 检查当前网络
   const checkNetwork = (chainId: string) => {
     const chainIdNum = parseInt(chainId, 16).toString();
-    const network = Object.values(NETWORKS).find(
-      (net) =>
-        net.chainId === chainId || net.chainIdNumber?.toString() === chainIdNum
-    );
+    const network = Object.values(NETWORKS).find((net) => net.chainId === chainId || net.chainIdNumber?.toString() === chainIdNum);
     const networkName = network?.name || "Unsupported Network";
-
-    setCurrentNetwork(networkName);
+    // setChainId(chainId);
 
     if (!network) {
-      showToast(
-        "Unsupported Network",
-        "Please switch to a supported network",
-        "error"
-      );
+      showToast("Unsupported Network", "Please switch to a supported network", "error");
     }
   };
 
   // 连接钱包
   const handleConnect = async () => {
     if (!window.ethereum && !window.solana) {
-      return showToast(
-        "Wallet Required",
-        "Please install MetaMask or Phantom Wallet",
-        "error"
-      );
+      return showToast("Wallet Required", "Please install MetaMask or Phantom Wallet", "error");
     }
 
     try {
@@ -240,8 +145,8 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
         const chainId = await window.ethereum.request({
           method: "eth_chainId",
         });
-
-        checkNetwork(chainId);
+        setChainId(chainId);
+        // checkNetwork(chainId);
         setWalletAddress(account);
       }
     } catch (error) {
@@ -249,16 +154,12 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
     }
   };
 
-  // 断开钱包
-  const handleDisconnect = () => {
-    setWalletAddress("");
-    setCurrentNetwork("");
-    showToast("Disconnected", "Wallet connection terminated", "info");
-  };
+
 
   // 切换网络
   const switchNetwork = async (network: keyof typeof NETWORKS) => {
-    if (network === "SOL") {
+    console.log(network.includes("SOL"), 'network____network__network')
+    if (network.includes("SOL")) {
       await handleSolanaConnection();
     } else {
       await handleEVMNetworkSwitch(network);
@@ -268,16 +169,13 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   // 连接 Solana 钱包
   const handleSolanaConnection = async () => {
     if (!window.solana) {
-      return showToast(
-        "Wallet Required",
-        "Please install Phantom Wallet",
-        "error"
-      );
+      return showToast("Wallet Required", "Please install Phantom Wallet", "error");
     }
 
     try {
       await window.solana.connect();
-      setCurrentNetwork("Solana");
+      setIsNetSol(true); // 是sol网络
+      setChainId();
       setWalletAddress(window.solana.publicKey.toString());
       showToast("Connected to Solana", "Successfully connected", "success");
     } catch (error) {
@@ -304,23 +202,17 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       const currentChainId = await window.ethereum.request({
         method: "eth_chainId",
       });
-      checkNetwork(currentChainId);
+      setChainId(currentChainId);
+      // checkNetwork(currentChainId);
 
-      showToast(
-        "Network Switched",
-        `Connected to ${NETWORKS[network].name}`,
-        "success"
-      );
+      showToast("Network Switched", `Connected to ${NETWORKS[network].name}`, "success");
     } catch (error: any) {
       handleNetworkSwitchError(error, network);
     }
   };
 
   // 处理网络切换错误
-  const handleNetworkSwitchError = async (
-    error: any,
-    network: keyof typeof NETWORKS
-  ) => {
+  const handleNetworkSwitchError = async (error: any, network: keyof typeof NETWORKS) => {
     if (error.code === 4902) {
       try {
         await addEVMNetwork(network);
@@ -352,11 +244,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   };
 
   // 显示 Toast 提示
-  const showToast = (
-    title: string,
-    description: string,
-    status: "info" | "warning" | "success" | "error"
-  ) => {
+  const showToast = (title: string, description: string, status: "info" | "warning" | "success" | "error") => {
     toast({
       title,
       description,
@@ -366,12 +254,27 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       position: "top-right",
     });
   };
+  const getNetworkName = useCallback((chainId: string, chainName?: string) => {
+    if (chainId) {
+      const chainIdNum = parseInt(chainId, 16).toString();
+      return chainIdsToNames[chainIdNum] || chainName;
+    } 
+    return isTestnet ? chainIdsToNames.SOL_TEST  : chainIdsToNames.SOL;
+  }, [isTestnet]);
+
+  useEffect(() => {
+    if (chainId) {
+      setIsNetSol(false);
+    }
+  }, [chainId, setIsNetSol]);
 
   // 网络切换按钮
   const NetworkButton = ({ network }: { network: keyof typeof NETWORKS }) => {
-    const isActive = currentNetwork === NETWORKS[network].name;
+    // const isActive = currentNetwork === NETWORKS[network].name;
+    const isActive = (!isNetSol && NETWORKS[network].chainId === chainId) || (isNetSol &&!chainId);
+   
+  
     const { colorScheme } = NETWORKS[network];
-
     return (
       <Button
         variant="outline"
@@ -390,7 +293,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
         }}
         transition="all 0.2s cubic-bezier(.08,.52,.52,1)"
       >
-        {NETWORKS[network].name.split(" ")[0]}
+        {getNetworkName(NETWORKS[network]?.chainId, NETWORKS[network].name.split(" ")[0])}
       </Button>
     );
   };
@@ -424,9 +327,15 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       justifyContent={isMobile ? "center" : "flex-start"}
       w={isMobile ? "100%" : "auto"}
     >
-      {(Object.keys(NETWORKS) as (keyof typeof NETWORKS)[]).map((network) => (
-        <NetworkButton key={network} network={network} />
-      ))}
+      {(Object.keys(NETWORKS) as (keyof typeof NETWORKS)[])
+        .filter((key) => {
+          const isTestnetNetwork = key.includes("_TEST");
+          return isTestnet ? isTestnetNetwork : !isTestnetNetwork;
+        })
+        .map((network) => (
+          <NetworkButton key={network} network={network} />
+        ))}
+
       <Menu>
         <MenuButton
           as={Button}
@@ -439,13 +348,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
         >
           {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
         </MenuButton>
-        <MenuList
-          bgGradient="linear(to-r, #5d6dff, #ff59c7)"
-          border="none"
-          boxShadow="0px 4px 20px rgba(0, 0, 0, 0.2)"
-          minW="200px"
-          py={0}
-        >
+        <MenuList bgGradient="linear(to-r, #5d6dff, #ff59c7)" border="none" boxShadow="0px 4px 20px rgba(0, 0, 0, 0.2)" minW="200px" py={0}>
           <MenuItem bg="transparent" color="white" closeOnSelect={false}>
             <Box>
               <Text fontSize="xs" color="blue.100">
@@ -455,12 +358,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
             </Box>
           </MenuItem>
           <MenuDivider borderColor="rgba(255,255,255,0.1)" />
-          <MenuItem
-            bg="transparent"
-            color="red.300"
-            _hover={{ bg: "rgba(255,90,90,0.2)", color: "red.400" }}
-            onClick={handleDisconnect}
-          >
+          <MenuItem bg="transparent" color="red.300" _hover={{ bg: "rgba(255,90,90,0.2)", color: "red.400" }} onClick={handleDisconnect}>
             Disconnect Wallet
           </MenuItem>
         </MenuList>

@@ -1,21 +1,8 @@
 import { useState, useEffect } from "react";
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Progress,
-  Flex,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
-  useBreakpointValue,
-  Button,
-} from "@chakra-ui/react";
+import { Box, VStack, HStack, Text, Progress, Flex, Slider, SliderTrack, SliderFilledTrack, SliderThumb, useBreakpointValue, Button } from "@chakra-ui/react";
 import Decimal from "decimal.js"; // 引入 Decimal.js 处理高精度计算
 import { debounce } from "lodash";
-
+import { chainIdsToNames } from "@/config/networks";
 import { observer } from "mobx-react-lite";
 import { useAppContext } from "../../stores/context";
 import ScrollAnimation from "../ui/ScrollAnimation";
@@ -23,7 +10,7 @@ import { getCryptoBalance } from "../../utils/getCryptoBalance";
 import useCrossChainTransfer from "../hooks/useSendTransaction";
 
 // 控制预售是否开始的常量
-const IS_PRESALE_ACTIVE = false;
+const IS_PRESALE_ACTIVE = true;
 
 const CHAIN_CONFIG: {
   [key: string]: {
@@ -64,8 +51,8 @@ const calculateDaysPassed = (startDate: Date, endDate: Date) => {
 const TokenSaleWidget = () => {
   // 设置固定目标时间（2025-03-17）
   const [shares, setShares] = useState(5);
-  const { currentNetwork, walletAddress, setLoading, loading } =
-    useAppContext();
+  const { walletAddress, chainId, isNetSol, setLoading, loading } = useAppContext();
+  const [currentNetwork, setCurrentNetwork] = useState("ETH");
   const sendTransaction = useCrossChainTransfer();
 
   const [progress, setProgress] = useState(0); // 进度
@@ -96,6 +83,14 @@ const TokenSaleWidget = () => {
     bsc: number | null;
   }>({ eth: null, sol: null, bsc: null });
 
+  useEffect(() => {
+    if (isNetSol) {
+      setCurrentNetwork("SOL");
+    } else if (chainId) {
+      const name = chainIdsToNames[parseInt(chainId, 16).toString()].split("_")[0] || "ETH";
+      setCurrentNetwork(name);
+    }
+  }, [chainId, isNetSol]);
   // 倒计时计算
   useEffect(() => {
     const endDate = getEndDate();
@@ -114,9 +109,7 @@ const TokenSaleWidget = () => {
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
@@ -151,21 +144,18 @@ const TokenSaleWidget = () => {
     return () => clearInterval(timer); // 清理定时器
   }, []);
   const transNetWork = (network: string) => {
-    if (network === "SOL") {
-      return "SOL";
-    }
-    if (network === "ETH" || network === "BASE") {
-      return "ETH";
-    } else if (network === "BSC") {
-      return "BNB";
-    }
-    return "ETH";
+    const networkMap = {
+      SOL: "SOL",
+      ETH: "ETH",
+      BASE: "ETH",
+      BSC: "BNB",
+    };
+    return networkMap[network] || "ETH";
   };
 
   // 精确计算函数
   const calculateValues = () => {
-    const config =
-      CHAIN_CONFIG[transNetWork(currentNetwork)] || CHAIN_CONFIG["ETH"];
+    const config = CHAIN_CONFIG[transNetWork(currentNetwork)] || CHAIN_CONFIG["ETH"];
 
     // 每日递增系数
     const dailyIncrease = config.dailyFactor.pow(daysPassed - 1);
@@ -174,9 +164,7 @@ const TokenSaleWidget = () => {
     const basePricePerToken = config.baseTotalEth.div(config.baseTotalTokens);
 
     // 当前价格
-    const pricePerToken = basePricePerToken
-      .mul(dailyIncrease)
-      .toFixed(config.decimals + 6);
+    const pricePerToken = basePricePerToken.mul(dailyIncrease).toFixed(config.decimals + 6);
 
     // 总代币数
     const totalTokens = config.baseTotalTokens.div(dailyIncrease).floor();
@@ -185,17 +173,12 @@ const TokenSaleWidget = () => {
     const tokensPerShare = totalTokens.div(10).floor();
 
     // 每份ETH/SOL/BNB
-    const ethPerShare = config.baseTotalEth
-      .div(10)
-      .div(dailyIncrease)
-      .toFixed(config.decimals);
+    const ethPerShare = config.baseTotalEth.div(10).div(dailyIncrease).toFixed(config.decimals);
 
     // 去掉末尾多余的零
     const formatPrice = (price) => {
       if (price.includes("e")) {
-        return new Decimal(price)
-          .toFixed(config.decimals + 6)
-          .replace(/\.?0+$/, "");
+        return new Decimal(price).toFixed(config.decimals + 6).replace(/\.?0+$/, "");
       }
       return price.replace(/\.?0+$/, "");
     };
@@ -207,8 +190,7 @@ const TokenSaleWidget = () => {
       ethPerShare: formatPrice(ethPerShare), // 每份 ETH/SOL/BNB
     };
   };
-  const { pricePerToken, tokensPerShare, totalTokens, ethPerShare } =
-    calculateValues();
+  const { pricePerToken, tokensPerShare, totalTokens, ethPerShare } = calculateValues();
 
   // 转账交易
   const handSendTransaction = debounce(async () => {
@@ -220,14 +202,10 @@ const TokenSaleWidget = () => {
     // eth链 sol链
     setLoading(true);
     let currentChain = ["ETH", "BASE", "BSC"].includes(currentNetwork) && "ETH";
-    currentChain =
-      currentNetwork.toUpperCase().includes(currentNetwork) && "SOL";
+    currentChain = currentNetwork.toUpperCase().includes(currentNetwork) && "SOL";
     const params = {
       chain: currentNetwork,
-      to:
-        currentChain === "ETH"
-          ? "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7"
-          : "2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A",
+      to: currentChain === "ETH" ? "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7" : "2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A",
       amount: ethPerShare * shares,
     };
     await sendTransaction(params.to, params.amount);
@@ -271,33 +249,14 @@ const TokenSaleWidget = () => {
     >
       {/* 倒计时部分 */}
       <VStack spacing={2} w="full">
-        <Text
-          mb={4}
-          fontWeight="500"
-          fontSize={{ base: "24px", sm: "30px" }}
-          color="white"
-          fontFamily="var(--font-jersey)"
-          textAlign="center"
-        >
+        <Text mb={4} fontWeight="500" fontSize={{ base: "24px", sm: "30px" }} color="white" fontFamily="var(--font-jersey)" textAlign="center">
           {/* <Text fontSize="lg" fontWeight="600" color="gray.700"> */}
           {/* Token price increase in: { perShareDisplay},{ totalDisplay } */}
         </Text>
         <ScrollAnimation animationType="fadeIn" delay={0.2}>
-          <HStack
-            spacing={{ base: 2, sm: 6 }}
-            justify="center"
-            w="full"
-            flexWrap="nowrap"
-            overflowX={{ base: "auto", sm: "visible" }}
-            pb={{ base: 2, sm: 0 }}
-          >
+          <HStack spacing={{ base: 2, sm: 6 }} justify="center" w="full" flexWrap="nowrap" overflowX={{ base: "auto", sm: "visible" }} pb={{ base: 2, sm: 0 }}>
             {Object.entries(timeLeft).map(([unit, value]) => (
-              <VStack
-                key={unit}
-                spacing={0}
-                mb={{ base: 0, sm: 0 }}
-                minW={{ base: "60px", sm: "auto" }}
-              >
+              <VStack key={unit} spacing={0} mb={{ base: 0, sm: 0 }} minW={{ base: "60px", sm: "auto" }}>
                 <Box
                   w={{ base: "55px", sm: 75 }}
                   h={{ base: 50, sm: 62 }}
@@ -307,19 +266,11 @@ const TokenSaleWidget = () => {
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <Text
-                    fontSize={{ base: "20px", sm: "32px" }}
-                    fontWeight="800"
-                    color="#5D5D5D"
-                  >
+                  <Text fontSize={{ base: "20px", sm: "32px" }} fontWeight="800" color="#5D5D5D">
                     {formatTimeUnit(value)}
                   </Text>
                 </Box>
-                <Text
-                  fontSize={{ base: "xs", sm: "sm" }}
-                  color="white"
-                  textTransform="capitalize"
-                >
+                <Text fontSize={{ base: "xs", sm: "sm" }} color="white" textTransform="capitalize">
                   {unit}
                 </Text>
               </VStack>
@@ -338,30 +289,16 @@ const TokenSaleWidget = () => {
           flexWrap={{ base: "wrap", sm: "nowrap" }}
           fontFamily="var(--font-jersey)"
         >
-          <Text>
-            raised: {balances.eth !== null ? balances.eth.toFixed(2) : "0.00"}$
-            ETH
-          </Text>
-          <Text>
-            {balances.bsc !== null ? balances.bsc.toFixed(2) : "0.00"}$ BNB
-          </Text>
-          <Text>
-            {balances.sol !== null ? balances.sol.toFixed(2) : "0.00"}$ SOL
-          </Text>
+          <Text>raised: {balances.eth !== null ? balances.eth.toFixed(2) : "0.00"}$ ETH</Text>
+          <Text>{balances.bsc !== null ? balances.bsc.toFixed(2) : "0.00"}$ BNB</Text>
+          <Text>{balances.sol !== null ? balances.sol.toFixed(2) : "0.00"}$ SOL</Text>
         </HStack>
         {/* <Progress value={0} w="full" height="8px" borderRadius="full" bg="white" /> */}
         {/* <Text fontSize="sm" color="gray.600">
           0%
         </Text> */}
         {/* 时间进度条 */}
-        <Box
-          position="relative"
-          w="full"
-          h="32px"
-          borderRadius="0"
-          bg="white"
-          overflow="hidden"
-        >
+        <Box position="relative" w="full" h="32px" borderRadius="0" bg="white" overflow="hidden">
           <Box
             position="absolute"
             top={0}
@@ -372,15 +309,7 @@ const TokenSaleWidget = () => {
             transition="width 0.5s ease"
           />
           {/* 进度条文本（可选） */}
-          <Box
-            position="absolute"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
-            color="#262424"
-            fontSize="sm"
-            fontWeight="bold"
-          >
+          <Box position="absolute" top="50%" left="50%" transform="translate(-50%, -50%)" color="#262424" fontSize="sm" fontWeight="bold">
             {Math.round(progress)}%
           </Box>
         </Box>
@@ -388,31 +317,14 @@ const TokenSaleWidget = () => {
 
       {/* 兑换比例 */}
       <Flex align="center" justify="center" mt={"16px"} mb={"14px"} gap={1}>
-        <Text
-          fontFamily="var(--font-jersey)"
-          color="white"
-          fontSize={{ base: "sm", sm: "md" }}
-          textAlign="center"
-        >
-          1 $ManusCoin = {pricePerToken}{" "}
-          {CHAIN_CONFIG[transNetWork(currentNetwork)]?.symbol || "ETH"}
+        <Text fontFamily="var(--font-jersey)" color="white" fontSize={{ base: "sm", sm: "md" }} textAlign="center">
+          1 $ManusCoin = {pricePerToken} {CHAIN_CONFIG[transNetWork(currentNetwork)]?.symbol || "ETH"}
         </Text>
       </Flex>
 
       {/* 滑块输入 */}
-      <Flex
-        align={"center"}
-        justify={"center"}
-        mb={6}
-        flexDir={{ base: "column", sm: "row" }}
-        gap={{ base: 2, sm: 0 }}
-      >
-        <Text
-          fontFamily="var(--font-jersey)"
-          color="white"
-          mr={{ base: 0, sm: "14px" }}
-          fontSize="14px"
-        >
+      <Flex align={"center"} justify={"center"} mb={6} flexDir={{ base: "column", sm: "row" }} gap={{ base: 2, sm: 0 }}>
+        <Text fontFamily="var(--font-jersey)" color="white" mr={{ base: 0, sm: "14px" }} fontSize="14px">
           Purchase quantity:
         </Text>
         <Flex align="center" width={{ base: "100%", sm: "auto" }}>
@@ -433,11 +345,7 @@ const TokenSaleWidget = () => {
             <SliderTrack h={"8px"} bg="rgba(255,255,255,0.1)">
               <SliderFilledTrack bgGradient="linear-gradient(102deg, #14A5ED 3.12%, #7F64FB 35.28%, #F33265 74.36%, #FF766C 102.07%)" />
             </SliderTrack>
-            <SliderThumb
-              boxSize={3}
-              border="2px solid"
-              borderColor="blue.200"
-            />
+            <SliderThumb boxSize={3} border="2px solid" borderColor="blue.200" />
           </Slider>
           <Text fontSize="sm" color="white">
             10
@@ -466,27 +374,13 @@ const TokenSaleWidget = () => {
           mx="auto"
           fontFamily="var(--font-jersey)"
           onClick={handSendTransaction}
-          bgGradient={
-            walletAddress && IS_PRESALE_ACTIVE
-              ? "linear(to-r, blue.400, purple.400)"
-              : "white!important"
-          }
-          cursor={
-            walletAddress && IS_PRESALE_ACTIVE
-              ? "pointer!important"
-              : "not-allowed"
-          }
+          bgGradient={walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "white!important"}
+          cursor={walletAddress && IS_PRESALE_ACTIVE ? "pointer!important" : "not-allowed"}
           _hover={{
-            bg:
-              walletAddress && IS_PRESALE_ACTIVE
-                ? "linear(to-r, blue.400, purple.400)"
-                : "#737373!important",
+            bg: walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
           }}
           _active={{
-            bg:
-              walletAddress && IS_PRESALE_ACTIVE
-                ? "linear(to-r, blue.400, purple.400)"
-                : "#737373!important",
+            bg: walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
           }}
         >
           {IS_PRESALE_ACTIVE ? "Buy" : "Coming Soon"} &nbsp;
@@ -498,15 +392,8 @@ const TokenSaleWidget = () => {
       </ScrollAnimation>
 
       {/* 价格提示 */}
-      <Text
-        textAlign="center"
-        color="white"
-        mt={"10px"}
-        fontSize={{ base: "xs", sm: "sm" }}
-      >
-        {IS_PRESALE_ACTIVE
-          ? "The price of $ManusCoin will increase by 20% daily."
-          : "Presale will be available soon. Please stay tuned!"}
+      <Text textAlign="center" color="white" mt={"10px"} fontSize={{ base: "xs", sm: "sm" }}>
+        {IS_PRESALE_ACTIVE ? "The price of $ManusCoin will increase by 20% daily." : "Presale will be available soon. Please stay tuned!"}
       </Text>
     </Box>
   );
