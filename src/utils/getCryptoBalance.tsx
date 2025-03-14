@@ -46,18 +46,18 @@ export const getCryptoBalance = async (
     // RPC配置
     const rpcConfig = {
       ETH: {
-        mainnet: 'https://mainnet.infura.io/v3/YOUR_INFURA_ID',
-        testnet: 'https://sepolia.infura.io/v3/YOUR_INFURA_ID'
+          mainnet: 'https://rpc.ankr.com/eth',
+          testnet: 'https://rpc.ankr.com/eth_sepolia'
       },
       BSC: {
-        mainnet: 'https://bsc-dataseed.binance.org/',
-        testnet: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
+          mainnet: 'https://bsc-dataseed.binance.org/',
+          testnet: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
       },
       SOL: {
-        mainnet: 'https://api.mainnet-beta.solana.com',
-        testnet: 'https://api.devnet.solana.com'
+          mainnet: 'https://api.mainnet-beta.solana.com',
+          testnet: 'https://api.devnet.solana.com'
       }
-    };
+  };
 
     validateAddress();
 

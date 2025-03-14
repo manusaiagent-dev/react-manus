@@ -6,11 +6,11 @@ import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransa
 
 const useSendTransaction = () => {
   const toast = useToast();
-  const { walletAddress, currentNetwork, setLoading } = useAppContext();
+  const { walletAddress, setLoading, isTestnet } = useAppContext();
 
   const sendTransaction = useCallback(
-    async (toAddress: string, amountInEth: number) => {
-      console.log(currentNetwork,'currentNetwork_sendTransaction')
+    async (toAddress: string, amountInEth: number, network: string) => {
+      console.log(network, "networknetworknetworknetworknetwork");
       if (!walletAddress) {
         setLoading(false);
 
@@ -25,7 +25,7 @@ const useSendTransaction = () => {
         return;
       }
       try {
-        if (["ETH", "BSC", "BASE"].includes(currentNetwork)) {
+        if (["ETH", "BSC", "BASE"].includes(network)) {
           // 是否安装 MetaMask
           if (!window.ethereum) {
             toast({
@@ -41,7 +41,7 @@ const useSendTransaction = () => {
             return;
           }
           const web3 = new Web3(window.ethereum);
-         
+
           const gasPrice = web3.utils.toWei("20", "gwei"); // 20 Gwei
           const gasLimit = 21000; // 默认 Gas Limit
           const balance = await web3.eth.getBalance(walletAddress);
@@ -59,7 +59,7 @@ const useSendTransaction = () => {
             setLoading(false);
             throw new Error("Insufficient balance");
           }
-  
+
           const txHash = await web3.eth.sendTransaction({
             from: walletAddress,
             to: "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7",
@@ -81,86 +81,127 @@ const useSendTransaction = () => {
 
           setLoading(false);
           return txHash;
-        }else if (currentNetwork.toUpperCase().includes('SOL')) {
+        } else if (network.toUpperCase().includes("SOL")) {
           // const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-        
-          const connection = new Connection('https://solana-api.projectserum.com', 'confirmed');
+          let connection;
+          if (isTestnet) {
+            connection = new Connection("https://api.devnet.solana.com", "confirmed");
+          } else {
+            connection = new Connection("https://solana-api.projectserum.com", "confirmed");
+          }
+          console.log("Solana Connection:", isTestnet, connection);
 
-        
           const fromPubkey = new PublicKey(walletAddress);
           const toPubkey = new PublicKey(toAddress);
-          const lamports = amountInEth * 1e9; // 将 SOL 转换为 lamports
+          const lamports = Math.floor(amountInEth * 1e9); // 将 SOL 转换为 lamports
+          const transactionFee = 5000; // Solana 交易费用
 
+          // 检查钱包是否可用
+          if (!window.phantom?.solana && !window.solana) {
+            throw new Error("Phantom wallet not found. Please install Phantom wallet.");
+          }
 
+          const solana = window.phantom?.solana || window.solana;
 
-          // const balance = await connection.getBalance(fromPubkey);
-          let balance ;
+          // 检查钱包是否已连接
+          if (!solana.isConnected) {
+            try {
+              await solana.connect();
+            } catch (error) {
+              throw new Error("Failed to connect to Phantom wallet.");
+            }
+          }
+
+          // 获取余额
+          let balance;
           let retryCount = 0;
           const maxRetries = 3;
+          const retryDelay = 1000; // 1秒延迟
+
           while (retryCount < maxRetries) {
-              try {
-                  balance = await connection.getBalance(fromPubkey);
-                  break;
-              } catch (error) {
-                  if (error.message.includes('403')) {
-                      console.log(`Retry ${retryCount + 1} due to 403 error`);
-                      retryCount++;
-                  } else {
-                      throw error;
-                  }
+            try {
+              balance = await connection.getBalance(fromPubkey);
+              break;
+            } catch (error) {
+              setLoading(false);
+              if (error.message.includes("403") || error.message.includes("429") || error.message.includes("502")) {
+                console.log(`Retry ${retryCount + 1} due to error: ${error.message}`);
+                retryCount++;
+                await new Promise((resolve) => setTimeout(resolve, retryDelay)); // 延迟重试
+              } else {
+                throw new Error(`Failed to get balance: ${error.message}`);
               }
+            }
           }
-      
+
           if (retryCount === maxRetries) {
-              throw new Error("Failed to get balance after multiple retries");
+            throw new Error("Failed to get balance after multiple retries");
           }
 
+          console.log("Balance:", balance, "Lamports:", lamports);
 
-          if (balance < lamports) {
-              throw new Error("Insufficient balance");
+          // 检查余额是否足够（包括交易费用）
+          if (balance < lamports + transactionFee) {
+            throw new Error(`Insufficient balance. Required: ${lamports + transactionFee} lamports, Available: ${balance} lamports`);
           }
 
+          // 创建交易
           const transaction = new Transaction().add(
-              SystemProgram.transfer({
-                  fromPubkey,
-                  toPubkey,
-                  lamports,
-              })
+            SystemProgram.transfer({
+              fromPubkey,
+              toPubkey,
+              lamports,
+            })
           );
 
-          const signer = await window.solana.connect();
-          const signature = await sendAndConfirmTransaction(
-              connection,
-              transaction,
-              [signer.publicKey],
-              { commitment: 'confirmed' }
-          );
+          // 设置交易的最近区块哈希（required for signing）
+          try {
+            const { blockhash } = await connection.getRecentBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = fromPubkey;
+          } catch (error) {
+            throw new Error(`Failed to get recent blockhash: ${error.message}`);
+          }
 
-          console.log("Sending Solana transaction...", signature, amountInEth);
-          toast({
+          // 签名并发送交易
+          try {
+            const signedTransaction = await solana.signTransaction(transaction);
+            const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+
+            // 确认交易
+            await connection.confirmTransaction(signature, "confirmed");
+
+            console.log("Transaction sent. Signature:", signature);
+
+            toast({
               title: "Transaction Sent",
               description: `Transaction hash: ${signature}`,
               status: "success",
               duration: 5000,
               isClosable: true,
               position: "top-right",
-          });
-          setLoading(false);
+            });
 
-          return signature;
-      } else {
+            return signature;
+          } catch (error) {
+            console.error("Transaction failed:", error);
+            throw new Error(`Transaction failed: ${error.message}`);
+          } finally {
+            setLoading(false);
+          }
+        } else {
           toast({
-              title: "Error",
-              description: "Unsupported network",
-              status: "error",
-              duration: 5000,
-              isClosable: true,
-              position: "top-right",
+            title: "Error",
+            description: "Unsupported network",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+            position: "top-right",
           });
           setLoading(false);
 
           return null;
-      }
+        }
       } catch (error) {
         console.error("Transaction failed:", error);
         setLoading(false);
@@ -175,7 +216,7 @@ const useSendTransaction = () => {
         return null;
       }
     },
-    [walletAddress, currentNetwork, toast]
+    [walletAddress, toast]
   );
 
   return sendTransaction;

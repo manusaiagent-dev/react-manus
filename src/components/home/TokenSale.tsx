@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Box, VStack, HStack, Text, Progress, Flex, Slider, SliderTrack, SliderFilledTrack, SliderThumb, useBreakpointValue, Button } from "@chakra-ui/react";
 import Decimal from "decimal.js"; // 引入 Decimal.js 处理高精度计算
 import { debounce } from "lodash";
-import { chainIdsToNames } from "@/config/networks";
+import { chainIdsToNames,  toAddress } from "@/config/networks";
 import { observer } from "mobx-react-lite";
 import { useAppContext } from "../../stores/context";
 import ScrollAnimation from "../ui/ScrollAnimation";
@@ -51,7 +51,7 @@ const calculateDaysPassed = (startDate: Date, endDate: Date) => {
 const TokenSaleWidget = () => {
   // 设置固定目标时间（2025-03-17）
   const [shares, setShares] = useState(5);
-  const { walletAddress, chainId, isNetSol, setLoading, loading } = useAppContext();
+  const { walletAddress, chainId, isNetSol, setLoading, loading, isTestnet  } = useAppContext();
   const [currentNetwork, setCurrentNetwork] = useState("ETH");
   const sendTransaction = useCrossChainTransfer();
 
@@ -65,7 +65,7 @@ const TokenSaleWidget = () => {
   });
   // 获取当前设置时间
   const getTodayStart = () => {
-    const todayStart = new Date(2025, 2, 4);
+    const todayStart = new Date(2025, 2, 14);
     return todayStart;
   };
   // 计算当前设置时间并设置7天倒计时
@@ -87,8 +87,13 @@ const TokenSaleWidget = () => {
     if (isNetSol) {
       setCurrentNetwork("SOL");
     } else if (chainId) {
-      const name = chainIdsToNames[parseInt(chainId, 16).toString()].split("_")[0] || "ETH";
-      setCurrentNetwork(name);
+      try{
+        const name = chainIdsToNames[parseInt(chainId, 16).toString()].split("_")[0] || "ETH";
+        setCurrentNetwork(name);
+      }catch(e){
+        console.log(e)
+      }
+    
     }
   }, [chainId, isNetSol]);
   // 倒计时计算
@@ -199,25 +204,40 @@ const TokenSaleWidget = () => {
       return;
     }
 
-    // eth链 sol链
     setLoading(true);
-    let currentChain = ["ETH", "BASE", "BSC"].includes(currentNetwork) && "ETH";
-    currentChain = currentNetwork.toUpperCase().includes(currentNetwork) && "SOL";
-    const params = {
-      chain: currentNetwork,
-      to: currentChain === "ETH" ? "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7" : "2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A",
-      amount: ethPerShare * shares,
-    };
-    await sendTransaction(params.to, params.amount);
+    // eth链 sol链
+
+    let address;
+    if(currentNetwork === "ETH" || currentNetwork === "BASE" || currentNetwork === "BSC"){
+      address = toAddress[isTestnet? "ETH_TEST": "ETH"];
+    }else{
+      address = toAddress[isTestnet? "SOL_TEST": "SOL"];
+    }
+    // 转账
+    const amount = ethPerShare * shares
+     // 添加调试信息
+     console.debug('[Transaction]', {
+      network: currentNetwork,
+      isTestnet,
+      address,
+      rawAmount: amount,
+      finalAmount: amount / 100
+    });
+    // TODO发送交易 - 地址 金额 网络  - 数值较大，则用除以100
+    await sendTransaction(address, amount / 100, currentNetwork);
   }, 1000);
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback( async () => {
     try {
       const [ethBalance, solBalance, bscBalance] = await Promise.all([
-        getCryptoBalance("ETH", "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7"),
-        getCryptoBalance("SOL", "2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A"),
-        getCryptoBalance("BSC", "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7"),
+        getCryptoBalance("ETH", toAddress[isTestnet? 'ETH_TEST': "ETH"], isTestnet ?  "testnet" : "mainnet"),
+        getCryptoBalance("SOL",  toAddress[isTestnet? 'SOL_TEST': "SOL"], isTestnet?  "testnet" : "mainnet"),
+        getCryptoBalance("BSC", toAddress[isTestnet? 'ETH_TEST': "ETH"] , isTestnet?  "testnet" : "mainnet"),
       ]);
-
+      console.log({
+        ethBalance,
+        solBalance,
+        bscBalance,
+      })
       setBalances({
         eth: ethBalance.success ? ethBalance.balance : null,
         sol: solBalance.success ? solBalance.balance : null,
@@ -226,7 +246,7 @@ const TokenSaleWidget = () => {
     } catch (error) {
       console.error("Global fetch error:", error);
     }
-  };
+  }, [isTestnet]);
   // 定时器设置
   useEffect(() => {
     // 立即执行第一次查询
@@ -237,7 +257,14 @@ const TokenSaleWidget = () => {
 
     // 清理函数
     return () => clearInterval(timer);
-  }, []);
+  }, [fetchBalances]);
+
+  const disabled = useMemo(() => {
+    if (IS_PRESALE_ACTIVE && walletAddress && !isTestnet) {
+      return true;
+    }
+  }, [walletAddress, isTestnet])
+
   return (
     <Box
       maxW={{ base: "100%", sm: "468px" }}
@@ -356,7 +383,8 @@ const TokenSaleWidget = () => {
       {/* 购买界面 */}
       <ScrollAnimation animationType="slideInFromBottom" delay={0.3}>
         <Button
-          disabled={!walletAddress || !IS_PRESALE_ACTIVE}
+          // disabled={!walletAddress || !IS_PRESALE_ACTIVE}
+          disabled={disabled}
           display={"flex"}
           justifyContent={"center"}
           alignItems={"center"}
@@ -374,13 +402,21 @@ const TokenSaleWidget = () => {
           mx="auto"
           fontFamily="var(--font-jersey)"
           onClick={handSendTransaction}
-          bgGradient={walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "white!important"}
-          cursor={walletAddress && IS_PRESALE_ACTIVE ? "pointer!important" : "not-allowed"}
+          // bgGradient={walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "white!important"}
+          // cursor={walletAddress && IS_PRESALE_ACTIVE ? "pointer!important" : "not-allowed"}
+          // _hover={{
+          //   bg: walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
+          // }}
+          // _active={{
+          //   bg: walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
+          // }}
+          bgGradient={!disabled ? "linear(to-r, blue.400, purple.400)" : "white!important"}
+          cursor={!disabled ? "pointer!important" : "not-allowed"}
           _hover={{
-            bg: walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
+            bg: !disabled ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
           }}
           _active={{
-            bg: walletAddress && IS_PRESALE_ACTIVE ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
+            bg: !disabled ? "linear(to-r, blue.400, purple.400)" : "#737373!important",
           }}
         >
           {IS_PRESALE_ACTIVE ? "Buy" : "Coming Soon"} &nbsp;

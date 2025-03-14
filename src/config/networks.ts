@@ -8,7 +8,8 @@ const NETWORKS: any = {
       symbol: "ETH",
       decimals: 18,
     },
-    rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_KEY"],
+    // rpcUrls: ["https://mainnet.infura.io/v3/YOUR_INFURA_KEY"],
+    rpcUrls: ["https://rpc.ankr.com/eth"],
     blockExplorerUrls: ["https://etherscan.io"],
     iconUrl: "https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png",
     colorScheme: "blue",
@@ -80,26 +81,21 @@ const NETWORKS: any = {
     colorScheme: "yellow",
   },
   BASE_TEST: {
-    chainId: "0x14a33",
-    chainIdNumber: 84531,
-    name: "Base Goerli Testnet",
+    chainId: "0x14A34",
+    chainIdNumber: 84532,
+    name: "Base Sepolia Testnet",
     nativeCurrency: {
       name: "Ethereum",
       symbol: "ETH",
       decimals: 18,
     },
     rpcUrls: [
-      "https://goerli.base.org",
-      "https://base-goerli.publicnode.com", // 备用节点
-      "https://base-goerli.gateway.tenderly.co",
+      "https://rpc.notadegen.com/base/sepolia",
+    //   "https://base-goerli.publicnode.com", // 备用节点
+    //   "https://base-goerli.gateway.tenderly.co",
     ],
     blockExplorerUrls: ["https://goerli.basescan.org"],
-    iconUrl: "https://base.org/favicon.ico",
-    // 新增MetaMask要求的字段
-    shortName: "base-goerli",
-    faucets: ["https://www.coinbase.com/faucets/base-ethereum-goerli-faucet"],
-    infoURL: "https://base.org",
-    colorScheme: "blue",
+    // iconUrl: "https://base.org/favicon.ico",
   },
   SOL_TEST: {
     name: "SOL Devnet",
@@ -120,4 +116,10 @@ const chainIdsToNames: Record<string | number, string> = {
   SOL: "SOL",
   SOL_TEST: "SOL_TEST",
 };
-export { NETWORKS, chainIdsToNames };
+const toAddress = {
+    SOL: '2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A', // 正式
+    SOL_TEST: 'EgfRtdJwzwnKYHsKUzLYkAMEN3docYuaCtLesytWKKQj', // 测试
+    ETH: '0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7', // 正式
+    ETH_TEST: '0x9893474207892592288695132068914166760922', // 测试
+}
+export { NETWORKS, chainIdsToNames, toAddress };
