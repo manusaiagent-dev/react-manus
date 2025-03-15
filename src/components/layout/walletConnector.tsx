@@ -1,9 +1,10 @@
 // components/WalletConnector.tsx
 "use client";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 import { Button, Menu, MenuButton, MenuList, MenuItem, MenuDivider, Text, useToast, HStack, Box, Switch } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
 import { NETWORKS, chainIdsToNames } from "@/config/networks";
+import NetworkButton from "./NetworkButton";
 // 添加 ethereum 和 solana 类型声明
 declare global {
   interface Window {
@@ -118,16 +119,16 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   }, [handleAccountsChanged, handleChainChanged, handleSolanaAccountChanged, handleSolanaDisconnect]);
 
   // 检查当前网络
-  const checkNetwork = (chainId: string) => {
-    const chainIdNum = parseInt(chainId, 16).toString();
-    const network = Object.values(NETWORKS).find((net) => net.chainId === chainId || net.chainIdNumber?.toString() === chainIdNum);
-    const networkName = network?.name || "Unsupported Network";
-    // setChainId(chainId);
+  // const checkNetwork = (chainId: string) => {
+  //   const chainIdNum = parseInt(chainId, 16).toString();
+  //   const network = Object.values(NETWORKS).find((net) => net.chainId === chainId || net.chainIdNumber?.toString() === chainIdNum);
+  //   const networkName = network?.name || "Unsupported Network";
+  //   // setChainId(chainId);
 
-    if (!network) {
-      showToast("Unsupported Network", "Please switch to a supported network", "error");
-    }
-  };
+  //   if (!network) {
+  //     showToast("Unsupported Network", "Please switch to a supported network", "error");
+  //   }
+  // };
 
   // 连接钱包
   const handleConnect = async () => {
@@ -158,7 +159,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
 
   // 切换网络
   const switchNetwork = async (network: keyof typeof NETWORKS) => {
-    console.log(network.includes("SOL"), 'network____network__network')
+    console.log('切换网络:' , network )
     if (network.includes("SOL")) {
       await handleSolanaConnection();
     } else {
@@ -202,6 +203,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       const currentChainId = await window.ethereum.request({
         method: "eth_chainId",
       });
+      console.log('获取当前的链currentChainId:', currentChainId)
       setChainId(currentChainId);
       // checkNetwork(currentChainId);
 
@@ -254,49 +256,12 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       position: "top-right",
     });
   };
-  const getNetworkName = useCallback((chainId: string, chainName?: string) => {
-    if (chainId) {
-      const chainIdNum = parseInt(chainId, 16).toString();
-      return chainIdsToNames[chainIdNum] || chainName;
-    } 
-    return isTestnet ? chainIdsToNames.SOL_TEST  : chainIdsToNames.SOL;
-  }, [isTestnet]);
 
   useEffect(() => {
     if (chainId) {
       setIsNetSol(false);
     }
   }, [chainId, setIsNetSol]);
-
-  // 网络切换按钮
-  const NetworkButton = ({ network }: { network: keyof typeof NETWORKS }) => {
-    // const isActive = currentNetwork === NETWORKS[network].name;
-    const isActive = (!isNetSol && NETWORKS[network].chainId === chainId) || (isNetSol &&!chainId);
-   
-  
-    const { colorScheme } = NETWORKS[network];
-    return (
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => switchNetwork(network)}
-        bg={isActive ? "white" : "transparent"}
-        color={isActive ? `${colorScheme}.600` : "gray.300"}
-        borderColor={isActive ? `${colorScheme}.200` : "gray.600"}
-        _hover={{
-          bg: isActive ? `${colorScheme}.500` : "whiteAlpha.200",
-          color: isActive ? "white" : `${colorScheme}.300`,
-          borderColor: isActive ? `${colorScheme}.500` : "gray.400",
-        }}
-        _active={{
-          bg: isActive ? `${colorScheme}.600` : "whiteAlpha.300",
-        }}
-        transition="all 0.2s cubic-bezier(.08,.52,.52,1)"
-      >
-        {getNetworkName(NETWORKS[network]?.chainId, NETWORKS[network].name.split(" ")[0])}
-      </Button>
-    );
-  };
 
   // 连接按钮样式
   const connectButtonStyle = {
@@ -319,7 +284,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
     },
     transition: "all 0.3s ease",
   };
-
+  console.log(chainId, 'chainllllllllll')
   return walletAddress ? (
     <HStack
       spacing={isMobile ? 2 : 4}
@@ -332,8 +297,8 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
           const isTestnetNetwork = key.includes("_TEST");
           return isTestnet ? isTestnetNetwork : !isTestnetNetwork;
         })
-        .map((network) => (
-          <NetworkButton key={network} network={network} />
+        .map((network, i) => (
+          <NetworkButton  key={`${NETWORKS[network].chainId}_${i}`} switchNetwork={switchNetwork} network={network} />
         ))}
 
       <Menu>

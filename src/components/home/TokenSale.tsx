@@ -88,6 +88,7 @@ const TokenSaleWidget = () => {
       setCurrentNetwork("SOL");
     } else if (chainId) {
       try{
+        // console.log(chainIdsToNames, chainId,parseInt(chainId, 16).toString(),'parseInt(chainId, 16).toString()')
         const name = chainIdsToNames[parseInt(chainId, 16).toString()].split("_")[0] || "ETH";
         setCurrentNetwork(name);
       }catch(e){

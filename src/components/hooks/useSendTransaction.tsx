@@ -2,18 +2,63 @@ import { useCallback } from "react";
 import { useToast } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
 import Web3 from "web3"; // 引入 web3.js
-import { Connection, PublicKey, Transaction, SystemProgram, sendAndConfirmTransaction } from "@solana/web3.js";
+import BN from "bn.js";
 
+import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+// 创建通用的转换函数
+const toBNSafe = (value: string | number | BN | bigint): BN => {
+  if (typeof value === 'bigint') {
+    return new BN(value.toString());
+  }
+  return new BN(value);
+};
 const useSendTransaction = () => {
   const toast = useToast();
   const { walletAddress, setLoading, isTestnet } = useAppContext();
+
+  const handleEVMTransaction = useCallback(async (web3: Web3, toAddress: string, amountInEth: number, walletAddress: string) => {
+    // 获取动态 gas 参数
+    const [gasPrice, estimatedGas] = await Promise.all([
+      web3.eth.getGasPrice(),
+      web3.eth.estimateGas({
+        from: walletAddress,
+        to: toAddress,
+        value: Web3.utils.toWei(amountInEth.toString(), "ether"),
+      }),
+    ]);
+  
+    // 使用 BN 处理大数
+    const valueWei = toBNSafe(Web3.utils.toWei(amountInEth.toString(), "ether"));
+    const gasPriceBN = toBNSafe(gasPrice);
+    const gasLimitBN = toBNSafe(estimatedGas);
+
+    // 计算总成本
+    const totalCost = valueWei.add(gasPriceBN.mul(gasLimitBN));
+
+     // 获取并转换余额
+     const rawBalance = await web3.eth.getBalance(walletAddress);
+     const balance = toBNSafe(rawBalance);
+      console.log("balance", balance, "totalCost", totalCost)
+    // 检查余额
+     if (balance.lt(totalCost)) {
+      throw new Error("Insufficient balance including gas fee");
+    }
+    // 构建交易参数
+    const txObject = {
+      from: walletAddress,
+      to: toAddress,
+      value: valueWei.toString(),
+      gas: estimatedGas.toString(),
+      gasPrice: gasPrice.toString(),
+    };
+    return web3.eth.sendTransaction(txObject);
+  }, []);
 
   const sendTransaction = useCallback(
     async (toAddress: string, amountInEth: number, network: string) => {
       console.log(network, "networknetworknetworknetworknetwork");
       if (!walletAddress) {
         setLoading(false);
-
         toast({
           title: "Error",
           description: "Please connect your wallet first",
@@ -25,62 +70,25 @@ const useSendTransaction = () => {
         return;
       }
       try {
+        // EVM 网络交易处理
         if (["ETH", "BSC", "BASE"].includes(network)) {
           // 是否安装 MetaMask
           if (!window.ethereum) {
-            toast({
-              title: "Error",
-              description: "Please install MetaMask",
-              status: "error",
-              duration: 5000,
-              isClosable: true,
-              position: "top-right",
-            });
-            setLoading(false);
-
-            return;
+            throw new Error("Please install MetaMask");
           }
+
           const web3 = new Web3(window.ethereum);
-
-          const gasPrice = web3.utils.toWei("20", "gwei"); // 20 Gwei
-          const gasLimit = 21000; // 默认 Gas Limit
-          const balance = await web3.eth.getBalance(walletAddress);
-          const requiredBalance = web3.utils.toWei(amountInEth, "ether") + gasLimit * gasPrice;
-          console.log({
-            balance,
-            requiredBalance,
-            from: walletAddress,
-            to: "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7",
-            value: web3.utils.toWei(amountInEth.toString(), "ether"),
-            gas: 21000, // 默认 Gas Limit
-            gasPrice: web3.utils.toWei("20", "gwei"), // 20 Gwei
-          });
-          if (balance < requiredBalance) {
-            setLoading(false);
-            throw new Error("Insufficient balance");
-          }
-
-          const txHash = await web3.eth.sendTransaction({
-            from: walletAddress,
-            to: "0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7",
-            value: web3.utils.toWei(amountInEth.toString(), "ether"),
-            gas: 21000, // 默认 Gas Limit
-            gasPrice: web3.utils.toWei("20", "gwei"), // 20 Gwei
-          });
-          console.log("Sending transaction...", txHash, 2222, amountInEth);
-          // 将 ETH 转换为 Wei（1 ETH = 10^18 Wei）
-          // 显示交易成功提示
+          const tx = await handleEVMTransaction(web3, toAddress, amountInEth, walletAddress);
           toast({
             title: "Transaction Sent",
-            description: `Transaction hash: ${txHash.transactionHash}`,
+            description: `Transaction hash: ${tx.transactionHash}`,
             status: "success",
             duration: 5000,
             isClosable: true,
             position: "top-right",
           });
 
-          setLoading(false);
-          return txHash;
+          return tx;
         } else if (network.toUpperCase().includes("SOL")) {
           // const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
           let connection;
@@ -89,7 +97,8 @@ const useSendTransaction = () => {
           } else {
             connection = new Connection("https://solana-api.projectserum.com", "confirmed");
           }
-          console.log("Solana Connection:", isTestnet, connection);
+          // console.log("Solana Connection:", isTestnet, connection);
+          // const  connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
           const fromPubkey = new PublicKey(walletAddress);
           const toPubkey = new PublicKey(toAddress);
@@ -204,7 +213,6 @@ const useSendTransaction = () => {
         }
       } catch (error) {
         console.error("Transaction failed:", error);
-        setLoading(false);
         toast({
           title: "Transaction Failed",
           description: error.message,
@@ -214,9 +222,11 @@ const useSendTransaction = () => {
           position: "top-right",
         });
         return null;
+      } finally {
+        setLoading(false);
       }
     },
-    [walletAddress, toast]
+    [walletAddress, setLoading, toast, handleEVMTransaction, isTestnet]
   );
 
   return sendTransaction;

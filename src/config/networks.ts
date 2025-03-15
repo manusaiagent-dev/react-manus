@@ -112,7 +112,7 @@ const chainIdsToNames: Record<string | number, string> = {
   8453: "BASE",
   11155111: "ETH_TEST",
   97: "BSC_TEST",
-  84531: "BASE_TEST",
+  84532: "BASE_TEST",
   SOL: "SOL",
   SOL_TEST: "SOL_TEST",
 };

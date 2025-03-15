@@ -8,7 +8,7 @@ export function AppProvider({ children }) {
   const [isNetSol, setIsNetSol] = useState(false); // 是否是solana网络
   const [chainId, setChainId] = useState();
   const [loading, setLoading] = useState(false);
-  const [isTestnet, setIsTestnet] = useState(false);
+  const [isTestnet, setIsTestnet] = useState(false); // 是否是测试网络
 
    // 封装 setCurrentNetwork 函数，处理 SOL 相关的设置
    const setCurrentNetwork = useCallback((network) => {
