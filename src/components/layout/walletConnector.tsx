@@ -150,7 +150,7 @@ const handleEVMNetworkSwitch = useCallback(
       // 创建超时Promise（5秒）
       const timeoutPromise = new Promise<string>((_, reject) => {
         setTimeout(() => {
-          reject(new Error('网络切换超时'));
+          reject(new Error('Network switching timeout'));
         }, 5000);
       });
 
@@ -176,7 +176,7 @@ const handleEVMNetworkSwitch = useCallback(
       setChainId(currentChainId);
       setWalletAddress(accounts[0]);
       
-      showToast("网络已切换", `已连接到 ${NETWORKS[network].name}`, "success");
+      showToast("Network switched", `Connected to ${NETWORKS[network].name}`, "success");
     } catch (error: any) {
       console.error('网络切换失败:', error);
       // 错误处理逻辑保持不变
@@ -186,12 +186,12 @@ const handleEVMNetworkSwitch = useCallback(
           await handleEVMNetworkSwitch(network);
         } catch (addError) {
           console.error(`添加网络失败: ${network}`, addError);
-          showToast("网络错误", `无法添加 ${network} 网络`, "error");
+          showToast("Network Error", `Unable to add ${network} Network`, "error");
         }
       } else if (error.code === 4001) {
-        showToast("请求已取消", "用户取消了网络切换", "info");
+        showToast("Request Cancelled", "User cancelled the network switch", "info");
       } else {
-        showToast("网络错误", error.message || "未知错误", "error");
+        showToast("Network Error", error.message || "Unknown error", "error");
       }
     }
   },
