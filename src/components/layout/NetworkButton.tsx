@@ -5,7 +5,6 @@ import { NETWORKS, chainIdsToNames } from "@/config/networks";
 
 const NetworkButton = ({ network, switchNetwork }: { network: keyof typeof NETWORKS; switchNetwork: (network: keyof typeof NETWORKS) => void }) => {
   const { chainId, isTestnet } = useAppContext();
-  console.log(chainId, "NetworkButtonNetworkButton");
   // 缓存网络配置
   const { colorScheme, chainId: networkChainId, name } = useMemo(() => NETWORKS[network], [network]);
 

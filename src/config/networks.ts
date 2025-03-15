@@ -94,6 +94,7 @@ const NETWORKS: any = {
     //   "https://base-goerli.publicnode.com", // 备用节点
     //   "https://base-goerli.gateway.tenderly.co",
     ],
+    colorScheme: "blue",
     blockExplorerUrls: ["https://goerli.basescan.org"],
     // iconUrl: "https://base.org/favicon.ico",
   },
@@ -120,6 +121,6 @@ const toAddress = {
     SOL: '2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A', // 正式
     SOL_TEST: 'EgfRtdJwzwnKYHsKUzLYkAMEN3docYuaCtLesytWKKQj', // 测试
     ETH: '0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7', // 正式
-    ETH_TEST: '0x9893474207892592288695132068914166760922', // 测试
+    ETH_TEST: '0xf6ea1f5cb8712e65968F10C48D2D65559CFCacc4', // 测试
 }
 export { NETWORKS, chainIdsToNames, toAddress };

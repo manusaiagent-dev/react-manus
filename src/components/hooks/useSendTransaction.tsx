@@ -7,7 +7,7 @@ import BN from "bn.js";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 // 创建通用的转换函数
 const toBNSafe = (value: string | number | BN | bigint): BN => {
-  if (typeof value === 'bigint') {
+  if (typeof value === "bigint") {
     return new BN(value.toString());
   }
   return new BN(value);
@@ -17,7 +17,12 @@ const useSendTransaction = () => {
   const { walletAddress, setLoading, isTestnet } = useAppContext();
 
   const handleEVMTransaction = useCallback(async (web3: Web3, toAddress: string, amountInEth: number, walletAddress: string) => {
+    // 1. 参数验证
+    if (isNaN(amountInEth) || amountInEth <= 0) {
+      throw new Error("转账金额必须大于0");
+    }
     // 获取动态 gas 参数
+    console.log(walletAddress, toAddress, amountInEth, "walletAddress_toAddress_amountInEth");
     const [gasPrice, estimatedGas] = await Promise.all([
       web3.eth.getGasPrice(),
       web3.eth.estimateGas({
@@ -26,7 +31,7 @@ const useSendTransaction = () => {
         value: Web3.utils.toWei(amountInEth.toString(), "ether"),
       }),
     ]);
-  
+    console.log(gasPrice, estimatedGas, "gasPrice_estimatedGas");
     // 使用 BN 处理大数
     const valueWei = toBNSafe(Web3.utils.toWei(amountInEth.toString(), "ether"));
     const gasPriceBN = toBNSafe(gasPrice);
@@ -35,12 +40,12 @@ const useSendTransaction = () => {
     // 计算总成本
     const totalCost = valueWei.add(gasPriceBN.mul(gasLimitBN));
 
-     // 获取并转换余额
-     const rawBalance = await web3.eth.getBalance(walletAddress);
-     const balance = toBNSafe(rawBalance);
-      console.log("balance", balance, "totalCost", totalCost)
+    // 获取并转换余额
+    const rawBalance = await web3.eth.getBalance(walletAddress);
+    const balance = toBNSafe(rawBalance);
+    console.log("balance", balance, "totalCost", totalCost, balance.lt(totalCost), valueWei.toString());
     // 检查余额
-     if (balance.lt(totalCost)) {
+    if (balance.lt(totalCost)) {
       throw new Error("Insufficient balance including gas fee");
     }
     // 构建交易参数

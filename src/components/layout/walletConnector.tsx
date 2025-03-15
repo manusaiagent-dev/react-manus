@@ -1,10 +1,11 @@
 // components/WalletConnector.tsx
 "use client";
-import { useEffect, useCallback, useMemo } from "react";
-import { Button, Menu, MenuButton, MenuList, MenuItem, MenuDivider, Text, useToast, HStack, Box, Switch } from "@chakra-ui/react";
+import { useEffect, useCallback } from "react";
+import { Button, Menu, MenuButton, MenuList, MenuItem, useToast, HStack } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
 import { NETWORKS, chainIdsToNames } from "@/config/networks";
 import NetworkButton from "./NetworkButton";
+
 // 添加 ethereum 和 solana 类型声明
 declare global {
   interface Window {
@@ -16,13 +17,40 @@ declare global {
 const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   const toast = useToast();
   const { walletAddress, setWalletAddress, isTestnet, setChainId, chainId } = useAppContext();
+
+  // 显示 Toast 提示
+  const showToast = useCallback(
+    (title: string, description: string, status: "info" | "warning" | "success" | "error") => {
+      toast.closeAll();
+      toast({
+        title,
+        description,
+        status,
+        duration: 5000,
+        isClosable: true,
+        position: "top-right",
+      });
+    },
+    [toast]
+  );
+
   // 断开钱包
-  const handleDisconnect = () => {
-    setWalletAddress("");
-    console.log('断开钱包', '断开钱包')
-    setChainId();
-    showToast("Disconnected", "Wallet connection terminated", "info");
-  };
+  const handleDisconnect =  useCallback(async() => {
+    try {
+      if (window.solana && window.solana.isConnected) {
+          await window.solana.disconnect();
+      }
+  } catch (error) {
+      console.error("Failed to disconnect Solana wallet:", error);
+  }
+   // 清除状态
+   setWalletAddress("");
+   setChainId("");
+ 
+   // 显示断开提示
+   showToast("Disconnected", "Wallet connection terminated", "info");
+  }, [setWalletAddress, setChainId, showToast]);
+
   // 监听 EVM 钱包状态变化
   const handleAccountsChanged = useCallback(
     (accounts: string[]) => {
@@ -39,56 +67,225 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   const handleChainChanged = useCallback(
     (chainIdHex: string) => {
       const chainIdDecimal = parseInt(chainIdHex, 16); // 转换十六进制为十进制
-      console.log('监听 EVM 网络变化', chainIdDecimal, 'chainIdDecimal')
       setChainId(chainIdDecimal.toString()); // 存储为字符串格式
     },
     [setChainId]
   );
 
   // 监听 Solana 钱包状态变化
-  const handleSolanaAccountChanged = useCallback((publicKey: any) => {
-    if (publicKey) {
-      setWalletAddress(publicKey.toString());
-    } else {
-      handleDisconnect();
-    }
-  }, []);
+  const handleSolanaAccountChanged = useCallback(
+    (publicKey: any) => {
+      if (publicKey) {
+        setWalletAddress(publicKey.toString());
+      } else {
+        handleDisconnect();
+      }
+    },
+    [handleDisconnect, setWalletAddress]
+  );
 
   const handleSolanaDisconnect = useCallback(() => {
     handleDisconnect();
   }, [handleDisconnect]);
 
+  // 连接 Solana 钱包
+  const handleSolanaConnection = useCallback(async () => {
+    if (!window.solana) {
+      return showToast("Wallet Required", "Please install Phantom Wallet", "error");
+    }
+
+    try {
+      await window.solana.connect();
+      setChainId("SOL"); // 设置网络为 Solana
+      setWalletAddress(window.solana.publicKey.toString());
+      showToast("Connected to Solana", "Successfully connected", "success");
+    } catch (error) {
+      console.error("Solana connection failed:", error);
+      showToast("Connection Failed", "Check Phantom settings", "error");
+    }
+  }, [setChainId, setWalletAddress, showToast]);
+
+  // 添加 EVM 网络
+  const addEVMNetwork = useCallback(async (network: keyof typeof NETWORKS) => {
+    await window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [
+        {
+          chainId: NETWORKS[network].chainId,
+          chainName: NETWORKS[network].name,
+          nativeCurrency: NETWORKS[network].nativeCurrency,
+          rpcUrls: NETWORKS[network].rpcUrls,
+          blockExplorerUrls: NETWORKS[network].blockExplorerUrls,
+          iconUrls: [NETWORKS[network].iconUrl],
+        },
+      ],
+    });
+  }, []);
+
+  // 切换 EVM 网络
+const handleEVMNetworkSwitch = useCallback(
+  async (network: keyof typeof NETWORKS) => {
+    console.log('开始切换网络', network);
+    try {
+      // 1. 发起网络切换请求
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: NETWORKS[network].chainId }],
+      });
+      console.log('网络切换请求已发送');
+
+      // 2. 等待网络切换完成（事件监听 + 超时机制）
+      let currentChainIdHex: string;
+      
+      // 创建事件监听Promise
+      const chainChangedPromise = new Promise<string>((resolve) => {
+        const handler = (newChainId: string) => {
+          console.log('chainChanged 事件触发:', newChainId);
+          window.ethereum.removeListener('chainChanged', handler);
+          resolve(newChainId);
+        };
+        window.ethereum.on('chainChanged', handler);
+      });
+
+      // 创建超时Promise（5秒）
+      const timeoutPromise = new Promise<string>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('网络切换超时'));
+        }, 5000);
+      });
+
+      // 等待事件或超时
+      try {
+        currentChainIdHex = await Promise.race([chainChangedPromise, timeoutPromise]);
+        console.log('最终确认的链ID:', currentChainIdHex);
+      } catch (error) {
+        console.warn('等待链切换时发生错误:', error);
+        // 超时后主动查询最新链ID
+        currentChainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+        console.log('超时后主动获取的链ID:', currentChainIdHex);
+      }
+
+      // 3. 验证账户信息
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      console.log('当前账户:', accounts);
+
+      // 4. 更新状态
+      const currentChainId = parseInt(currentChainIdHex, 16).toString();
+      console.log('十进制链ID:', currentChainId);
+      
+      setChainId(currentChainId);
+      setWalletAddress(accounts[0]);
+      
+      showToast("网络已切换", `已连接到 ${NETWORKS[network].name}`, "success");
+    } catch (error: any) {
+      console.error('网络切换失败:', error);
+      // 错误处理逻辑保持不变
+      if (error.code === 4902) {
+        try {
+          await addEVMNetwork(network);
+          await handleEVMNetworkSwitch(network);
+        } catch (addError) {
+          console.error(`添加网络失败: ${network}`, addError);
+          showToast("网络错误", `无法添加 ${network} 网络`, "error");
+        }
+      } else if (error.code === 4001) {
+        showToast("请求已取消", "用户取消了网络切换", "info");
+      } else {
+        showToast("网络错误", error.message || "未知错误", "error");
+      }
+    }
+  },
+  [addEVMNetwork, setChainId, setWalletAddress, showToast]
+);
+
+  // 切换 EVM 网络
+  // const handleEVMNetworkSwitch = useCallback(
+  //   async (network: keyof typeof NETWORKS) => {
+  //     console.log('111111')
+  //     try {
+  //       await window.ethereum.request({
+  //         method: "wallet_switchEthereumChain",
+  //         params: [{ chainId: NETWORKS[network].chainId }],
+  //       });
+  //       console.log('222222')
+
+  //       // 添加延迟确保网络切换完成
+  //       await new Promise((resolve) => setTimeout(resolve, 1000));
+  //       console.log('33333')
+
+  //       // 双重验证当前网络
+  //       const [currentChainIdHex, accounts] = await Promise.all([
+  //         window.ethereum.request({ method: "eth_chainId" }),
+  //         window.ethereum.request({ method: "eth_accounts" }),
+  //       ]);
+  //       console.log('44444', currentChainIdHex, accounts[0])
+
+  //       const currentChainId = parseInt(currentChainIdHex, 16).toString();
+  //       console.log('55555', currentChainIdHex,currentChainId, accounts[0])
+
+  //       setChainId(currentChainId);
+  //       setWalletAddress(accounts[0]);
+  //       showToast("Network Switched", `Connected to ${NETWORKS[network].name}`, "success");
+  //     } catch (error: any) {
+  //       if (error.code === 4902) {
+  //         try {
+  //           await addEVMNetwork(network);
+  //           await handleEVMNetworkSwitch(network); // 重试切换网络
+  //         } catch (addError) {
+  //           console.error(`Failed to add ${network} network:`, addError);
+  //           showToast("Network Error", `Failed to add ${network} network`, "error");
+  //         }
+  //       } else if (error.code === 4001) {
+  //         showToast("Request Cancelled", "Network switch cancelled", "info");
+  //       }
+  //     }
+  //   },
+  //   [addEVMNetwork, setChainId, setWalletAddress, showToast]
+  // );
+
+  // 切换网络
+  const switchNetwork = useCallback(
+    async (network: keyof typeof NETWORKS) => {
+      if (network.includes("SOL")) {
+        await handleSolanaConnection();
+      } else {
+        await handleEVMNetworkSwitch(network);
+      }
+    },
+    [handleEVMNetworkSwitch, handleSolanaConnection]
+  );
+
   // 自动重连逻辑
   useEffect(() => {
     const checkConnectedWallet = async () => {
-      // 优先检查EVM钱包
+      if (walletAddress) return;
+
+      // 优先检查 EVM 钱包
       if (window.ethereum?.isConnected()) {
         try {
-        
           const [account, chainIdHex] = await Promise.all([
             window.ethereum.request({ method: "eth_accounts" }),
-            window.ethereum.request({ method: "eth_chainId" })
+            window.ethereum.request({ method: "eth_chainId" }),
           ]);
           if (account.length > 0) {
             const chainIdDecimal = parseInt(chainIdHex, 16).toString();
-            console.log('自动重连逻辑', chainIdDecimal, 'chainIdDecimal')
             setChainId(chainIdDecimal);
             setWalletAddress(account[0]);
-            return; // 优先保持EVM连接状态
+            return;
           }
         } catch (error) {
           console.error("Auto-connect failed:", error);
           handleDisconnect();
         }
       }
-    // 只有EVM未连接时才检查Solana
+
+      // 检查 Solana 钱包
       if (window.solana?.isConnected) {
         try {
           const publicKey = window.solana.publicKey;
           if (publicKey) {
             setWalletAddress(publicKey.toString());
-            console.log('只有EVM未连接时才检查Solana', '自动重连逻辑')
-            setChainId("SOL"); // 设置明确标识
+            setChainId("SOL");
           }
         } catch (error) {
           console.error("Solana auto-connect failed:", error);
@@ -98,7 +295,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
     };
 
     checkConnectedWallet();
-  }, [handleDisconnect, setChainId, setWalletAddress]);
+  }, [handleDisconnect, setChainId, setWalletAddress, walletAddress]);
 
   // 清理事件监听
   useEffect(() => {
@@ -126,7 +323,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   }, [handleAccountsChanged, handleChainChanged, handleSolanaAccountChanged, handleSolanaDisconnect]);
 
   // 连接钱包
-  const handleConnect = async () => {
+  const handleConnect = useCallback(async () => {
     if (!window.ethereum && !window.solana) {
       return showToast("Wallet Required", "Please install MetaMask or Phantom Wallet", "error");
     }
@@ -135,130 +332,20 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       if (chainId === "SOL") {
         await handleSolanaConnection();
       } else {
-
         const [account, chainIdHex] = await Promise.all([
           window.ethereum.request({ method: "eth_accounts" }),
-          window.ethereum.request({ method: "eth_chainId" })
+          window.ethereum.request({ method: "eth_chainId" }),
         ]);
         if (account.length > 0) {
           const chainIdDecimal = parseInt(chainIdHex, 16).toString();
-          console.log('连接钱包连接钱包连接钱包连接钱包', chainIdDecimal, 'chainIdDecimal')
           setChainId(chainIdDecimal);
           setWalletAddress(account[0]);
-          return; // 优先保持EVM连接状态
         }
-
       }
     } catch (error) {
       showToast("Connection Failed", "User denied authorization", "warning");
     }
-  };
-
-  // 切换网络
-  const switchNetwork = async (network: keyof typeof NETWORKS) => {
-    console.log("切换网络:", network);
-    if (network.includes("SOL")) {
-      await handleSolanaConnection();
-    } else {
-      await handleEVMNetworkSwitch(network);
-    }
-  };
-
-  // 连接 Solana 钱包
-  const handleSolanaConnection = async () => {
-    if (!window.solana) {
-      return showToast("Wallet Required", "Please install Phantom Wallet", "error");
-    }
-
-    try {
-      await window.solana.connect();
-      console.log('连接 Solana 钱包连接 Solana 钱包连接 Solana 钱包连接 Solana 钱包')
-      setChainId("SOL"); // 是sol网络
-      setWalletAddress(window.solana.publicKey.toString());
-      showToast("Connected to Solana", "Successfully connected", "success");
-    } catch (error) {
-      console.error("Solana connection failed:", error);
-      showToast("Connection Failed", "Check Phantom settings", "error");
-    }
-  };
-
-  // 切换 EVM 网络
-  const handleEVMNetworkSwitch = async (network: keyof typeof NETWORKS) => {
-    try {
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: NETWORKS[network].chainId }],
-      });
-      console.log(1111)
-      // 添加延迟确保网络切换完成
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log(2222)
-
-      // 双重验证当前网络
-      const [currentChainIdHex, accounts] = await Promise.all([
-        window.ethereum.request({ method: "eth_chainId" }),
-        window.ethereum.request({ method: "eth_accounts" }),
-      ]);
-      console.log(3333, currentChainIdHex, accounts[0])
-
-      const currentChainId = parseInt(currentChainIdHex, 16).toString();
-      console.log(444444, currentChainId, accounts[0], currentChainId , network, NETWORKS[network].chainIdNumber?.toString())
-
-      if (currentChainId !== NETWORKS[network].chainIdNumber?.toString()) {
-        // throw new Error("Network switch verification failed");
-      }
-      setChainId(currentChainId);
-      setWalletAddress(accounts[0]);
-      console.log('切换网络成功', currentChainId,'currentChainIdcurrentChainId')
-      showToast("Network Switched", `Connected to ${NETWORKS[network].name}`, "success");
-    } catch (error: any) {
-      handleNetworkSwitchError(error, network);
-    }
-  };
-
-  // 处理网络切换错误
-  const handleNetworkSwitchError = async (error: any, network: keyof typeof NETWORKS) => {
-    if (error.code === 4902) {
-      try {
-        await addEVMNetwork(network);
-        await switchNetwork(network);
-      } catch (addError) {
-        console.error(`Failed to add ${network} network:`, addError);
-        showToast("Network Error", `Failed to add ${network} network`, "error");
-      }
-    } else if (error.code === 4001) {
-      showToast("Request Cancelled", "Network switch cancelled", "info");
-    }
-  };
-
-  // 添加 EVM 网络
-  const addEVMNetwork = async (network: keyof typeof NETWORKS) => {
-    await window.ethereum.request({
-      method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: NETWORKS[network].chainId,
-          chainName: NETWORKS[network].name,
-          nativeCurrency: NETWORKS[network].nativeCurrency,
-          rpcUrls: NETWORKS[network].rpcUrls,
-          blockExplorerUrls: NETWORKS[network].blockExplorerUrls,
-          iconUrls: [NETWORKS[network].iconUrl],
-        },
-      ],
-    });
-  };
-
-  // 显示 Toast 提示
-  const showToast = (title: string, description: string, status: "info" | "warning" | "success" | "error") => {
-    toast({
-      title,
-      description,
-      status,
-      duration: 5000,
-      isClosable: true,
-      position: "top-right",
-    });
-  };
+  }, [handleSolanaConnection, setChainId, setWalletAddress, showToast, chainId]);
 
   // 连接按钮样式
   const connectButtonStyle = {
@@ -281,6 +368,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
     },
     transition: "all 0.3s ease",
   };
+
   return walletAddress ? (
     <HStack
       spacing={isMobile ? 2 : 4}
@@ -309,7 +397,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
         >
           {`${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`}
         </MenuButton>
-        <MenuList bg='#5d6dff' border="none" minW="200px" py={0}>
+        <MenuList bg="#5d6dff" border="none" minW="200px" py={0}>
           <MenuItem bg="transparent" color="white" closeOnSelect={false}>
             Current Network: {chainIdsToNames[chainId]}
           </MenuItem>
