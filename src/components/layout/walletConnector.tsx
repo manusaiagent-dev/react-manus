@@ -198,50 +198,7 @@ const handleEVMNetworkSwitch = useCallback(
   [addEVMNetwork, setChainId, setWalletAddress, showToast]
 );
 
-  // 切换 EVM 网络
-  // const handleEVMNetworkSwitch = useCallback(
-  //   async (network: keyof typeof NETWORKS) => {
-  //     console.log('111111')
-  //     try {
-  //       await window.ethereum.request({
-  //         method: "wallet_switchEthereumChain",
-  //         params: [{ chainId: NETWORKS[network].chainId }],
-  //       });
-  //       console.log('222222')
-
-  //       // 添加延迟确保网络切换完成
-  //       await new Promise((resolve) => setTimeout(resolve, 1000));
-  //       console.log('33333')
-
-  //       // 双重验证当前网络
-  //       const [currentChainIdHex, accounts] = await Promise.all([
-  //         window.ethereum.request({ method: "eth_chainId" }),
-  //         window.ethereum.request({ method: "eth_accounts" }),
-  //       ]);
-  //       console.log('44444', currentChainIdHex, accounts[0])
-
-  //       const currentChainId = parseInt(currentChainIdHex, 16).toString();
-  //       console.log('55555', currentChainIdHex,currentChainId, accounts[0])
-
-  //       setChainId(currentChainId);
-  //       setWalletAddress(accounts[0]);
-  //       showToast("Network Switched", `Connected to ${NETWORKS[network].name}`, "success");
-  //     } catch (error: any) {
-  //       if (error.code === 4902) {
-  //         try {
-  //           await addEVMNetwork(network);
-  //           await handleEVMNetworkSwitch(network); // 重试切换网络
-  //         } catch (addError) {
-  //           console.error(`Failed to add ${network} network:`, addError);
-  //           showToast("Network Error", `Failed to add ${network} network`, "error");
-  //         }
-  //       } else if (error.code === 4001) {
-  //         showToast("Request Cancelled", "Network switch cancelled", "info");
-  //       }
-  //     }
-  //   },
-  //   [addEVMNetwork, setChainId, setWalletAddress, showToast]
-  // );
+ 
 
   // 切换网络
   const switchNetwork = useCallback(

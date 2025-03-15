@@ -204,17 +204,7 @@ const useSendTransaction = () => {
             setLoading(false);
           }
         } else {
-          toast({
-            title: "Error",
-            description: "Unsupported network",
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-            position: "top-right",
-          });
-          setLoading(false);
-
-          return null;
+          throw new Error("Unsupported network");
         }
       } catch (error) {
         console.error("Transaction failed:", error);
