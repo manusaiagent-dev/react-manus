@@ -90,12 +90,13 @@ const NETWORKS: any = {
       decimals: 18,
     },
     rpcUrls: [
+        
       "https://rpc.notadegen.com/base/sepolia",
     //   "https://base-goerli.publicnode.com", // 备用节点
     //   "https://base-goerli.gateway.tenderly.co",
     ],
     colorScheme: "blue",
-    blockExplorerUrls: ["https://goerli.basescan.org"],
+    blockExplorerUrls: ["wss://base-sepolia.drpc.org"],
     // iconUrl: "https://base.org/favicon.ico",
   },
   SOL_TEST: {
@@ -121,6 +122,6 @@ const toAddress = {
     SOL: '2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A', // 正式
     SOL_TEST: 'EgfRtdJwzwnKYHsKUzLYkAMEN3docYuaCtLesytWKKQj', // 测试
     ETH: '0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7', // 正式
-    ETH_TEST: '0xf6ea1f5cb8712e65968F10C48D2D65559CFCacc4', // 测试
+    ETH_TEST: '0x36bcb4E3bAa37b2D37d89cD7E9663942038c6703', // 测试
 }
 export { NETWORKS, chainIdsToNames, toAddress };
