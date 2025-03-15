@@ -1,6 +1,6 @@
 // components/WalletConnector.tsx
 "use client";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { Button, Menu, MenuButton, MenuList, MenuItem, useToast, HStack } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
 import { NETWORKS, chainIdsToNames } from "@/config/networks";
@@ -16,7 +16,7 @@ declare global {
 
 const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   const toast = useToast();
-  const { walletAddress, setWalletAddress, isTestnet, setChainId, chainId } = useAppContext();
+  const { walletAddress, setWalletAddress, isTestnet, setChainId, chainId, isDisconnecting,setIsDisconnecting } = useAppContext();
 
   // 显示 Toast 提示
   const showToast = useCallback(
@@ -35,21 +35,22 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   );
 
   // 断开钱包
-  const handleDisconnect =  useCallback(async() => {
+  const handleDisconnect = useCallback(async () => {
     try {
       if (window.solana && window.solana.isConnected) {
-          await window.solana.disconnect();
+        await window.solana.disconnect();
       }
-  } catch (error) {
+    } catch (error) {
       console.error("Failed to disconnect Solana wallet:", error);
-  }
-   // 清除状态
-   setWalletAddress("");
-   setChainId("");
- 
-   // 显示断开提示
-   showToast("Disconnected", "Wallet connection terminated", "info");
-  }, [setWalletAddress, setChainId, showToast]);
+    }
+    // 清除状态
+    setWalletAddress("");
+    setChainId("");
+    setIsDisconnecting(true); // 设置标志位
+    // 显示断开提示
+    showToast("Disconnected", "Wallet connection terminated", "info");
+    
+  }, [setWalletAddress, setChainId, showToast, setIsDisconnecting]);
 
   // 监听 EVM 钱包状态变化
   const handleAccountsChanged = useCallback(
@@ -123,82 +124,72 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
   }, []);
 
   // 切换 EVM 网络
-const handleEVMNetworkSwitch = useCallback(
-  async (network: keyof typeof NETWORKS) => {
-    console.log('开始切换网络', network);
-    try {
-      // 1. 发起网络切换请求
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: NETWORKS[network].chainId }],
-      });
-      console.log('网络切换请求已发送');
-
-      // 2. 等待网络切换完成（事件监听 + 超时机制）
-      let currentChainIdHex: string;
-      
-      // 创建事件监听Promise
-      const chainChangedPromise = new Promise<string>((resolve) => {
-        const handler = (newChainId: string) => {
-          console.log('chainChanged 事件触发:', newChainId);
-          window.ethereum.removeListener('chainChanged', handler);
-          resolve(newChainId);
-        };
-        window.ethereum.on('chainChanged', handler);
-      });
-
-      // 创建超时Promise（5秒）
-      const timeoutPromise = new Promise<string>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('Network switching timeout'));
-        }, 5000);
-      });
-
-      // 等待事件或超时
+  const handleEVMNetworkSwitch = useCallback(
+    async (network: keyof typeof NETWORKS) => {
       try {
-        currentChainIdHex = await Promise.race([chainChangedPromise, timeoutPromise]);
-        console.log('最终确认的链ID:', currentChainIdHex);
-      } catch (error) {
-        console.warn('等待链切换时发生错误:', error);
-        // 超时后主动查询最新链ID
-        currentChainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-        console.log('超时后主动获取的链ID:', currentChainIdHex);
-      }
+        // 1. 发起网络切换请求
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: NETWORKS[network].chainId }],
+        });
 
-      // 3. 验证账户信息
-      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-      console.log('当前账户:', accounts);
+        // 2. 等待网络切换完成（事件监听 + 超时机制）
+        let currentChainIdHex: string;
 
-      // 4. 更新状态
-      const currentChainId = parseInt(currentChainIdHex, 16).toString();
-      console.log('十进制链ID:', currentChainId);
-      
-      setChainId(currentChainId);
-      setWalletAddress(accounts[0]);
-      
-      showToast("Network switched", `Connected to ${NETWORKS[network].name}`, "success");
-    } catch (error: any) {
-      console.error('网络切换失败:', error);
-      // 错误处理逻辑保持不变
-      if (error.code === 4902) {
+        // 创建事件监听Promise
+        const chainChangedPromise = new Promise<string>((resolve) => {
+          const handler = (newChainId: string) => {
+            window.ethereum.removeListener("chainChanged", handler);
+            resolve(newChainId);
+          };
+          window.ethereum.on("chainChanged", handler);
+        });
+
+        // 创建超时Promise（5秒）
+        const timeoutPromise = new Promise<string>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error("Network switching timeout"));
+          }, 5000);
+        });
+
+        // 等待事件或超时
         try {
-          await addEVMNetwork(network);
-          await handleEVMNetworkSwitch(network);
-        } catch (addError) {
-          console.error(`添加网络失败: ${network}`, addError);
-          showToast("Network Error", `Unable to add ${network} Network`, "error");
+          currentChainIdHex = await Promise.race([chainChangedPromise, timeoutPromise]);
+        } catch (error) {
+          // 超时后主动查询最新链ID
+          currentChainIdHex = await window.ethereum.request({ method: "eth_chainId" });
         }
-      } else if (error.code === 4001) {
-        showToast("Request Cancelled", "User cancelled the network switch", "info");
-      } else {
-        showToast("Network Error", error.message || "Unknown error", "error");
-      }
-    }
-  },
-  [addEVMNetwork, setChainId, setWalletAddress, showToast]
-);
 
- 
+        // 3. 验证账户信息
+        const accounts = await window.ethereum.request({ method: "eth_accounts" });
+
+        // 4. 更新状态
+        const currentChainId = parseInt(currentChainIdHex, 16).toString();
+
+        setChainId(currentChainId);
+        setWalletAddress(accounts[0]);
+
+        showToast("Network switched", `Connected to ${NETWORKS[network].name}`, "success");
+      } catch (error: any) {
+        console.error("网络切换失败:", error);
+        // 错误处理逻辑保持不变
+        if (error.code === 4902) {
+          try {
+            await addEVMNetwork(network);
+            await handleEVMNetworkSwitch(network);
+          } catch (addError) {
+            console.error(`添加网络失败: ${network}`, addError);
+            showToast("Network Error", `Unable to add ${network} Network`, "error");
+          }
+        } else if (error.code === 4001) {
+          showToast("Request Cancelled", "User cancelled the network switch", "info");
+        } else {
+          showToast("Network Error", error.message || "Unknown error", "error");
+        }
+      }
+    },
+    [addEVMNetwork, setChainId, setWalletAddress, showToast]
+  );
 
   // 切换网络
   const switchNetwork = useCallback(
@@ -211,12 +202,10 @@ const handleEVMNetworkSwitch = useCallback(
     },
     [handleEVMNetworkSwitch, handleSolanaConnection]
   );
-
   // 自动重连逻辑
   useEffect(() => {
     const checkConnectedWallet = async () => {
-      if (walletAddress) return;
-
+      if(walletAddress || isDisconnecting) return;
       // 优先检查 EVM 钱包
       if (window.ethereum?.isConnected()) {
         try {
@@ -252,7 +241,7 @@ const handleEVMNetworkSwitch = useCallback(
     };
 
     checkConnectedWallet();
-  }, [handleDisconnect, setChainId, setWalletAddress, walletAddress]);
+  }, [handleDisconnect, isDisconnecting, setChainId, setWalletAddress, walletAddress]);
 
   // 清理事件监听
   useEffect(() => {
