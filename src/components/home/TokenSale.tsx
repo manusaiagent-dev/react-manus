@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Box, VStack, HStack, Text, Progress, Flex, Slider, SliderTrack, SliderFilledTrack, SliderThumb, useBreakpointValue, Button } from "@chakra-ui/react";
 import Decimal from "decimal.js"; // 引入 Decimal.js 处理高精度计算
 import { debounce } from "lodash";
-import { chainIdsToNames,  toAddress } from "@/config/networks";
+import { chainIdsToNames, toAddress } from "@/config/networks";
 import { observer } from "mobx-react-lite";
 import { useAppContext } from "../../stores/context";
 import ScrollAnimation from "../ui/ScrollAnimation";
@@ -51,7 +51,7 @@ const calculateDaysPassed = (startDate: Date, endDate: Date) => {
 const TokenSaleWidget = () => {
   // 设置固定目标时间（2025-03-17）
   const [shares, setShares] = useState(5);
-  const { walletAddress, chainId, isNetSol, setLoading, loading, isTestnet  } = useAppContext();
+  const { walletAddress, chainId, setLoading, loading, isTestnet } = useAppContext();
   const [currentNetwork, setCurrentNetwork] = useState("ETH");
   const sendTransaction = useCrossChainTransfer();
 
@@ -69,12 +69,12 @@ const TokenSaleWidget = () => {
     return todayStart;
   };
   // 计算当前设置时间并设置7天倒计时
-  const getEndDate = () => {
+  const getEndDate = useCallback(() => {
     const todayStart = getTodayStart();
     // 设置7天后的凌晨
     const endDate = new Date(todayStart.getTime() + 7 * 24 * 60 * 60 * 1000);
     return endDate;
-  };
+  }, []);
   const [daysPassed, setDaysPassed] = useState(1); // 当天算第一天
   // 监测余额
   const [balances, setBalances] = useState<{
@@ -84,19 +84,9 @@ const TokenSaleWidget = () => {
   }>({ eth: null, sol: null, bsc: null });
 
   useEffect(() => {
-    if (isNetSol) {
-      setCurrentNetwork("SOL");
-    } else if (chainId) {
-      try{
-        // console.log(chainIdsToNames, chainId,parseInt(chainId, 16).toString(),'parseInt(chainId, 16).toString()')
-        const name = chainIdsToNames[parseInt(chainId, 16).toString()].split("_")[0] || "ETH";
-        setCurrentNetwork(name);
-      }catch(e){
-        console.log(e)
-      }
-    
-    }
-  }, [chainId, isNetSol]);
+    const name = chainIdsToNames[chainId]?.split("_")[0] || "ETH";
+    setCurrentNetwork(name);
+  }, [chainId]);
   // 倒计时计算
   useEffect(() => {
     const endDate = getEndDate();
@@ -125,13 +115,13 @@ const TokenSaleWidget = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [getEndDate]);
   // 格式化时间显示
   const formatTimeUnit = (value: number) => {
     return value < 0 ? "00" : value.toString().padStart(2, "0");
   };
   // 计算进度
-  const calculateProgress = () => {
+  const calculateProgress = useCallback(() => {
     const now = new Date();
     const startTime = getTodayStart().getTime();
     const endTime = getEndDate().getTime();
@@ -141,14 +131,14 @@ const TokenSaleWidget = () => {
     // 计算进度百分比
     const progressValue = Math.min((elapsedTime / totalDuration) * 100, 100);
     setProgress(progressValue);
-  };
+  }, [getEndDate]);
   // 定时更新进度
   useEffect(() => {
     calculateProgress(); // 初始化计算
     const timer = setInterval(calculateProgress, 1000); // 每秒更新一次
 
     return () => clearInterval(timer); // 清理定时器
-  }, []);
+  }, [calculateProgress]);
   const transNetWork = (network: string) => {
     const networkMap = {
       SOL: "SOL",
@@ -196,7 +186,7 @@ const TokenSaleWidget = () => {
       ethPerShare: formatPrice(ethPerShare), // 每份 ETH/SOL/BNB
     };
   };
-  const { pricePerToken, tokensPerShare, totalTokens, ethPerShare } = calculateValues();
+  const { pricePerToken,  ethPerShare } = calculateValues();
 
   // 转账交易
   const handSendTransaction = debounce(async () => {
@@ -209,36 +199,36 @@ const TokenSaleWidget = () => {
     // eth链 sol链
 
     let address;
-    if(currentNetwork === "ETH" || currentNetwork === "BASE" || currentNetwork === "BSC"){
-      address = toAddress[isTestnet? "ETH_TEST": "ETH"];
-    }else{
-      address = toAddress[isTestnet? "SOL_TEST": "SOL"];
+    if (currentNetwork === "ETH" || currentNetwork === "BASE" || currentNetwork === "BSC") {
+      address = toAddress[isTestnet ? "ETH_TEST" : "ETH"];
+    } else {
+      address = toAddress[isTestnet ? "SOL_TEST" : "SOL"];
     }
     // 转账
-    const amount = ethPerShare * shares
-     // 添加调试信息
-     console.debug('[Transaction]', {
+    const amount = ethPerShare * shares;
+    // 添加调试信息
+    console.debug("[Transaction]", {
       network: currentNetwork,
       isTestnet,
       address,
       rawAmount: amount,
-      finalAmount: amount / 100
+      finalAmount: amount / 100,
     });
     // TODO发送交易 - 地址 金额 网络  - 数值较大，则用除以100
     await sendTransaction(address, amount / 100, currentNetwork);
   }, 1000);
-  const fetchBalances = useCallback( async () => {
+  const fetchBalances = useCallback(async () => {
     try {
       const [ethBalance, solBalance, bscBalance] = await Promise.all([
-        getCryptoBalance("ETH", toAddress[isTestnet? 'ETH_TEST': "ETH"], isTestnet ?  "testnet" : "mainnet"),
-        getCryptoBalance("SOL",  toAddress[isTestnet? 'SOL_TEST': "SOL"], isTestnet?  "testnet" : "mainnet"),
-        getCryptoBalance("BSC", toAddress[isTestnet? 'ETH_TEST': "ETH"] , isTestnet?  "testnet" : "mainnet"),
+        getCryptoBalance("ETH", toAddress[isTestnet ? "ETH_TEST" : "ETH"], isTestnet ? "testnet" : "mainnet"),
+        getCryptoBalance("SOL", toAddress[isTestnet ? "SOL_TEST" : "SOL"], isTestnet ? "testnet" : "mainnet"),
+        getCryptoBalance("BSC", toAddress[isTestnet ? "ETH_TEST" : "ETH"], isTestnet ? "testnet" : "mainnet"),
       ]);
       console.log({
         ethBalance,
         solBalance,
         bscBalance,
-      })
+      });
       setBalances({
         eth: ethBalance.success ? ethBalance.balance : null,
         sol: solBalance.success ? solBalance.balance : null,
@@ -264,7 +254,7 @@ const TokenSaleWidget = () => {
     if (IS_PRESALE_ACTIVE && walletAddress && !isTestnet) {
       return true;
     }
-  }, [walletAddress, isTestnet])
+  }, [walletAddress, isTestnet]);
 
   return (
     <Box

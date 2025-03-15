@@ -3,15 +3,17 @@ import { Button } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
 import { NETWORKS, chainIdsToNames } from "@/config/networks";
 
-const NetworkButton = ({ network, switchNetwork }: { network: keyof typeof NETWORKS, switchNetwork: (network: keyof typeof NETWORKS)=>void }) => {
-  const { chainId, isNetSol,  isTestnet } = useAppContext();
-
-  // 计算 isActive 的缓存值
-  const isActive = useMemo(() => (!isNetSol && chainId && NETWORKS[network].chainId === chainId) || (isNetSol && !chainId && NETWORKS[network].name.includes('SOL')), [isNetSol, chainId, network]);
-
+const NetworkButton = ({ network, switchNetwork }: { network: keyof typeof NETWORKS; switchNetwork: (network: keyof typeof NETWORKS) => void }) => {
+  const { chainId, isTestnet } = useAppContext();
+  console.log(chainId, "NetworkButtonNetworkButton");
   // 缓存网络配置
   const { colorScheme, chainId: networkChainId, name } = useMemo(() => NETWORKS[network], [network]);
-  // console.log(isActive,chainId,network,'isActiveisActiveisActiveisActiveisActiveisActive')
+
+  const isActive: boolean = useMemo(
+    () => (chainId === "SOL" && NETWORKS[network].name.includes("SOL")) || (chainId !== "SOL" && chainId && NETWORKS[network].chainIdNumber == +chainId),
+    [chainId, network]
+  );
+
   // 缓存按钮样式配置
   const buttonStyles = useMemo(
     () => ({
@@ -41,7 +43,6 @@ const NetworkButton = ({ network, switchNetwork }: { network: keyof typeof NETWO
   );
   // 缓存按钮文字
   const buttonText = useMemo(() => getNetworkName(networkChainId, name.split(" ")[0]), [getNetworkName, networkChainId, name]);
-  // console.log(chainId, 'NetworkButtonNetworkButton')
   return (
     <Button variant="outline" size="sm" onClick={() => switchNetwork(network)} transition="all 0.2s cubic-bezier(.08,.52,.52,1)" {...buttonStyles}>
       {buttonText}
@@ -49,4 +50,4 @@ const NetworkButton = ({ network, switchNetwork }: { network: keyof typeof NETWO
   );
 };
 
-export default (NetworkButton);
+export default memo(NetworkButton);
