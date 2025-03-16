@@ -186,7 +186,7 @@ const TokenSaleWidget = () => {
       ethPerShare: formatPrice(ethPerShare), // 每份 ETH/SOL/BNB
     };
   };
-  const { pricePerToken,  ethPerShare } = calculateValues();
+  const { pricePerToken, ethPerShare } = calculateValues();
 
   // 转账交易
   const handSendTransaction = debounce(async () => {
@@ -244,7 +244,7 @@ const TokenSaleWidget = () => {
     fetchBalances();
 
     // 设置定时器
-    const timer = setInterval(fetchBalances, 1000 * 60 * 5); // 每 5分钟查询一次
+    const timer = setInterval(fetchBalances, 1000 * 60 * 2); // 每 2分钟查询一次
 
     // 清理函数
     return () => clearInterval(timer);
@@ -363,7 +363,24 @@ const TokenSaleWidget = () => {
             <SliderTrack h={"8px"} bg="rgba(255,255,255,0.1)">
               <SliderFilledTrack bgGradient="linear-gradient(102deg, #14A5ED 3.12%, #7F64FB 35.28%, #F33265 74.36%, #FF766C 102.07%)" />
             </SliderTrack>
-            <SliderThumb boxSize={3} border="2px solid" borderColor="blue.200" />
+            <SliderThumb boxSize={3} border="2px solid" borderColor="blue.200" _focus={{ boxShadow: "none" }}>
+              <Box
+                position="absolute"
+                bottom="100%"
+                mb={0}
+                px={2}
+                py={1}
+                height={'28px'}
+                borderRadius="md"
+                color="white"
+                fontSize="sm"
+                fontWeight="bold"
+                whiteSpace="nowrap"
+              >
+                {shares}
+              </Box>
+            </SliderThumb>
+            {/* <SliderThumb boxSize={3} border="2px solid" borderColor="blue.200" /> */}
           </Slider>
           <Text fontSize="sm" color="white">
             10
