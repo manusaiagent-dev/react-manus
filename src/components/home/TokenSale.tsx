@@ -186,7 +186,7 @@ const TokenSaleWidget = () => {
       ethPerShare: formatPrice(ethPerShare), // 每份 ETH/SOL/BNB
     };
   };
-  const { pricePerToken, ethPerShare } = calculateValues();
+  const { pricePerToken, totalTokens, ethPerShare } = calculateValues();
 
   // 转账交易
   const handSendTransaction = debounce(async () => {
@@ -370,7 +370,7 @@ const TokenSaleWidget = () => {
                 mb={0}
                 px={2}
                 py={1}
-                height={'28px'}
+                height={"28px"}
                 borderRadius="md"
                 color="white"
                 fontSize="sm"
@@ -428,9 +428,12 @@ const TokenSaleWidget = () => {
           }}
         >
           {IS_PRESALE_ACTIVE ? "Buy" : "Coming Soon"} &nbsp;
-          {/* <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
-            {totalTokens.toLocaleString()}
-          </Text> */}
+          {
+            isTestnet && <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
+            {totalTokens.toLocaleString()} &nbsp;
+          </Text>
+          }
+          
           $ManusCoin
         </Button>
       </ScrollAnimation>
