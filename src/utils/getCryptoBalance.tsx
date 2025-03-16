@@ -54,7 +54,7 @@ export const getCryptoBalance = async (
           testnet: 'https://data-seed-prebsc-1-s1.binance.org:8545/'
       },
       SOL: {
-          mainnet: 'https://api.mainnet-beta.solana.com',
+          mainnet: 'https://mainnet.helius-rpc.com/?api-key=97475525-924d-4797-a21e-84dd98d41de1',
           testnet: 'https://api.devnet.solana.com'
       }
   };
