@@ -278,10 +278,13 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
       if (chainId === "SOL") {
         await handleSolanaConnection();
       } else {
+        console.log('connecting')
         const [account, chainIdHex] = await Promise.all([
-          window.ethereum.request({ method: "eth_accounts" }),
+          window.ethereum.request({ method: "eth_requestAccounts" }),
           window.ethereum.request({ method: "eth_chainId" }),
         ]);
+        console.log('connecting1111',account,chainIdHex)
+
         if (account.length > 0) {
           const chainIdDecimal = parseInt(chainIdHex, 16).toString();
           setChainId(chainIdDecimal);
