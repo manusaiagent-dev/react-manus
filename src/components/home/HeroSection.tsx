@@ -1,21 +1,11 @@
 "use client";
-import {
-  Box,
-  Container,
-  Grid,
-  GridItem,
-  Heading,
-  Text,
-  Button,
-  Flex,
-  useBreakpointValue,
-  keyframes,
-} from "@chakra-ui/react";
+import { Box, Container, Grid, GridItem, Heading, Text, Button, Flex, useBreakpointValue, keyframes } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import CountdownTimer from "../ui/CountdownTimer";
 import ProgressBar from "../ui/ProgressBar";
 import TokenSale from "./TokenSale";
 import ScrollAnimation from "../ui/ScrollAnimation";
+import { useAppContext } from "../../stores/context";
 
 // 定义发光动画
 const glow = keyframes`
@@ -37,6 +27,8 @@ const gradientShift = keyframes`
  */
 export default function HeroSection() {
   const [progress, setProgress] = useState(0);
+  const { isTestnet } = useAppContext();
+
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Simulate progress growth
@@ -77,8 +69,7 @@ export default function HeroSection() {
           left: 0,
           right: 0,
           bottom: 0,
-          background:
-            "linear-gradient(45deg, rgba(0,255,255,0.1), rgba(128,0,255,0.1))",
+          background: "linear-gradient(45deg, rgba(0,255,255,0.1), rgba(128,0,255,0.1))",
           animation: `${gradientShift} 10s ease infinite`,
           backgroundSize: "200% 200%",
           zIndex: 0,
@@ -86,36 +77,15 @@ export default function HeroSection() {
       }}
     >
       {/* Background Overlay */}
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        bg="rgba(0, 0, 20, 0)"
-        backdropFilter="blur(0px)"
-      />
+      <Box position="absolute" top={0} left={0} right={0} bottom={0} bg="rgba(0, 0, 20, 0)" backdropFilter="blur(0px)" />
 
       <Container maxW="container.xl" position="relative" zIndex={2}>
-        <Grid
-          templateColumns={{ base: "1fr", md: "1fr 1fr" }}
-          gap={{ base: 6, md: 10 }}
-          minH={{ base: "auto", md: "90vh" }}
-          alignItems="center"
-        >
+        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={{ base: 6, md: 10 }} minH={{ base: "auto", md: "90vh" }} alignItems="center">
           {/* Left Content Area */}
           <GridItem>
-            <ScrollAnimation
-              animationType="slideInFromLeft"
-              duration={1.2}
-              threshold={0.1}
-            >
+            <ScrollAnimation animationType="slideInFromLeft" duration={1.2} threshold={0.1}>
               <Box>
-                <ScrollAnimation
-                  animationType="fadeIn"
-                  delay={0.3}
-                  duration={1.5}
-                >
+                <ScrollAnimation animationType="fadeIn" delay={0.3} duration={1.5}>
                   <Heading
                     as="h1"
                     size="2xl"
@@ -131,8 +101,7 @@ export default function HeroSection() {
                     animation={`${glow} 3s ease-in-out infinite`}
                     cursor="default"
                     _hover={{
-                      bgGradient:
-                        "linear(to-r, blue.500, purple.500, cyan.400)",
+                      bgGradient: "linear(to-r, blue.500, purple.500, cyan.400)",
                       transform: "translateY(-2px)",
                     }}
                   >
@@ -140,11 +109,7 @@ export default function HeroSection() {
                   </Heading>
                 </ScrollAnimation>
 
-                <ScrollAnimation
-                  animationType="slideInFromBottom"
-                  delay={0.5}
-                  duration={1}
-                >
+                <ScrollAnimation animationType="slideInFromBottom" delay={0.5} duration={1}>
                   <Text
                     fontSize={{ base: "lg", md: "xl", lg: "2xl" }}
                     fontWeight="bold"
@@ -162,11 +127,7 @@ export default function HeroSection() {
                   </Text>
                 </ScrollAnimation>
 
-                <ScrollAnimation
-                  animationType="fadeIn"
-                  delay={0.7}
-                  duration={1.2}
-                >
+                <ScrollAnimation animationType="fadeIn" delay={0.7} duration={1.2}>
                   <Text
                     fontSize={{ base: "sm", md: "md", lg: "lg" }}
                     color="gray.300"
@@ -180,17 +141,11 @@ export default function HeroSection() {
                       color: "gray.100",
                     }}
                   >
-                    In the AI era, who will dominate? The community-driven
-                    intelligent entity Manus awakens to challenge the
-                    centralized AI giant GPT.
+                    In the AI era, who will dominate? The community-driven intelligent entity Manus awakens to challenge the centralized AI giant GPT.
                   </Text>
                 </ScrollAnimation>
 
-                <ScrollAnimation
-                  animationType="zoomIn"
-                  delay={0.9}
-                  duration={0.8}
-                >
+                <ScrollAnimation animationType="zoomIn" delay={0.9} duration={0.8}>
                   <Button
                     size={{ base: "md", md: "lg" }}
                     bgGradient="linear(to-r, purple.500, pink.500)"
@@ -217,11 +172,7 @@ export default function HeroSection() {
                   </Button>
                 </ScrollAnimation>
 
-                <ScrollAnimation
-                  animationType="slideInFromBottom"
-                  delay={1.1}
-                  duration={0.8}
-                >
+                <ScrollAnimation animationType="slideInFromBottom" delay={1.1} duration={0.8}>
                   <Text
                     fontSize="sm"
                     color="gray.400"
@@ -244,21 +195,10 @@ export default function HeroSection() {
           </GridItem>
 
           {/* Right Token Sale Area */}
-          <GridItem
-            position={{ base: "static", md: "absolute" }}
-            right={0}
-            mt={{ base: 8, md: 0 }}
-          >
-            <Text
-              fontSize={{ base: "24px", md: "36px" }}
-              fontFamily="var(--font-jersey)"
-              textAlign={"center"}
-              color="white"
-              fontWeight="bold"
-              mb={2}
-            >
+          <GridItem position={{ base: "static", md: "absolute" }} right={0} mt={{ base: 8, md: 0 }}>
+            <Text fontSize={{ base: "24px", md: "36px" }} fontFamily="var(--font-jersey)" textAlign={"center"} color="white" fontWeight="bold" mb={2}>
+              {!isTestnet ? "COMING SOON" : "Buy $ManusCoin tokens now:"}
               {/* Buy $ManusCoin tokens now: */}
-              COMING SOON
             </Text>
             <TokenSale />
             <Box
@@ -277,13 +217,7 @@ export default function HeroSection() {
               transition="all 0.3s ease"
             >
               <Box mb={6}>
-                <Heading
-                  size="lg"
-                  mb={4}
-                  bgGradient="linear(to-r, blue.400, purple.400)"
-                  bgClip="text"
-                  fontFamily="var(--font-jersey)"
-                >
+                <Heading size="lg" mb={4} bgGradient="linear(to-r, blue.400, purple.400)" bgClip="text" fontFamily="var(--font-jersey)">
                   Buy $ManusCoin tokens now:
                 </Heading>
                 <Text mb={4} color="gray.300" fontFamily="var(--font-jersey)">
@@ -296,44 +230,23 @@ export default function HeroSection() {
 
               {/* Progress Bar */}
               <Box w="100%" mb={9}>
-                <Text
-                  mb={2}
-                  fontSize="sm"
-                  color="gray.400"
-                  fontFamily="var(--font-jersey)"
-                >
+                <Text mb={2} fontSize="sm" color="gray.400" fontFamily="var(--font-jersey)">
                   ETH/BNB/SOL raised:$0.00/$0.00
                 </Text>
                 <ProgressBar value={progress} />
-                <Text
-                  mt={2}
-                  fontSize="sm"
-                  textAlign="right"
-                  color="gray.400"
-                  fontFamily="var(--font-jersey)"
-                >
+                <Text mt={2} fontSize="sm" textAlign="right" color="gray.400" fontFamily="var(--font-jersey)">
                   {progress.toFixed(1)}%
                 </Text>
               </Box>
 
-              <Flex
-                w="100%"
-                justify="space-between"
-                mb={6}
-                paddingLeft={{ base: "0", md: "200px" }}
-              >
+              <Flex w="100%" justify="space-between" mb={6} paddingLeft={{ base: "0", md: "200px" }}>
                 <Text color="gray.300" fontFamily="var(--font-jersey)">
                   1 $MANUS=$0
                 </Text>
                 {/* <Text color="gray.300">Min: 0.01 ETH</Text> */}
               </Flex>
 
-              <Text
-                fontSize="sm"
-                mb={4}
-                color="gray.400"
-                fontFamily="var(--font-jersey)"
-              >
+              <Text fontSize="sm" mb={4} color="gray.400" fontFamily="var(--font-jersey)">
                 Connect your wallet:
               </Text>
 

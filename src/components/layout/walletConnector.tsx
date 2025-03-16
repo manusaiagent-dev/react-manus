@@ -337,6 +337,7 @@ const WalletConnector = ({ isMobile = false }: { isMobile?: boolean }) => {
           bgGradient="linear(to-r, blue.400, purple.400)"
           color="white"
           _hover={{ bgGradient: "linear(to-r, blue.500, purple.500)" }}
+          _active={{ bgGradient: "linear(to-r, blue.600, purple.600)" }}
           size={isMobile ? "sm" : "md"}
           w={isMobile ? "100%" : "auto"}
           mt={isMobile ? 2 : 0}
