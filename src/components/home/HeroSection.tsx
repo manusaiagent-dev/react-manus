@@ -6,7 +6,7 @@ import ProgressBar from "../ui/ProgressBar";
 import TokenSale from "./TokenSale";
 import ScrollAnimation from "../ui/ScrollAnimation";
 import { useAppContext } from "../../stores/context";
-
+import InvitedSection from './InvitedSection'
 // 定义发光动画
 const glow = keyframes`
   0% { text-shadow: 0 0 10px rgba(0,255,255,0.5), 0 0 20px rgba(0,255,255,0.3); }
@@ -146,7 +146,8 @@ export default function HeroSection() {
                 </ScrollAnimation>
 
                 <ScrollAnimation animationType="zoomIn" delay={0.9} duration={0.8}>
-                  <Button
+                  <InvitedSection />
+                  {/* <Button
                     size={{ base: "md", md: "lg" }}
                     bgGradient="linear(to-r, purple.500, pink.500)"
                     color="white"
@@ -169,7 +170,7 @@ export default function HeroSection() {
                     }}
                   >
                     Join Now
-                  </Button>
+                  </Button> */}
                 </ScrollAnimation>
 
                 <ScrollAnimation animationType="slideInFromBottom" delay={1.1} duration={0.8}>
