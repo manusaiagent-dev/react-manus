@@ -89,6 +89,8 @@ A new era begins—self-evolving intelligence challenges centralized AI. Join th
               textDecoration: "underline",
               textShadow: "0 0 8px rgba(0,255,255,0.4)",
             }}
+            wordBreak={{ base: "break-all" }} // md: "normal" 
+
             onClick={copyToClipboard}
           >
             {memoizedInviteLink}
