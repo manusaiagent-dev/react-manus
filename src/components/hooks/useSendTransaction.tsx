@@ -3,7 +3,9 @@ import { useToast } from "@chakra-ui/react";
 import { useAppContext } from "../../stores/context";
 import Web3 from "web3"; // 引入 web3.js
 import BN from "bn.js";
-
+import { newInvite } from "@/services";
+import { useRequest } from "ahooks";
+import { chainIdsToNames } from "@/config/networks";
 import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
 // 创建通用的转换函数
 const toBNSafe = (value: string | number | BN | bigint): BN => {
@@ -14,8 +16,15 @@ const toBNSafe = (value: string | number | BN | bigint): BN => {
 };
 const useSendTransaction = () => {
   const toast = useToast();
-  const { walletAddress, setLoading, isTestnet } = useAppContext();
-
+  const { walletAddress, setLoading, isTestnet, chainId } = useAppContext();
+  const { run } = useRequest(newInvite, {
+    manual: true,
+  });
+  // 获取推荐人参数
+  const getInviterParam = useCallback(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("referral");
+  }, []);
   const handleEVMTransaction = useCallback(async (web3: Web3, toAddress: string, amountInEth: number, walletAddress: string) => {
     // 1. 参数验证
     if (isNaN(amountInEth) || amountInEth <= 0) {
@@ -60,7 +69,7 @@ const useSendTransaction = () => {
   }, []);
 
   const sendTransaction = useCallback(
-    async (toAddress: string, amountInEth: number, network: string) => {
+    async (toAddress: string, amountInEth: number, network: string, totalTokens?: number) => {
       console.log(network, "networknetworknetworknetworknetwork");
       if (!walletAddress) {
         setLoading(false);
@@ -74,7 +83,9 @@ const useSendTransaction = () => {
         });
         return;
       }
+
       try {
+        let txHash;
         // EVM 网络交易处理
         if (["ETH", "BSC", "BASE"].includes(network)) {
           // 是否安装 MetaMask
@@ -93,7 +104,9 @@ const useSendTransaction = () => {
             position: "top-right",
           });
 
-          return tx;
+          txHash = tx.transactionHash;
+
+          // return tx;
         } else if (network.toUpperCase().includes("SOL")) {
           // const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
           let connection;
@@ -195,8 +208,7 @@ const useSendTransaction = () => {
               isClosable: true,
               position: "top-right",
             });
-
-            return signature;
+            txHash = signature;
           } catch (error) {
             console.error("Transaction failed:", error);
             throw new Error(`Transaction failed: ${error.message}`);
@@ -206,6 +218,16 @@ const useSendTransaction = () => {
         } else {
           throw new Error("Unsupported network");
         }
+        const inviter = getInviterParam(); // 如果参数不存在返回 null 
+        if (!inviter) return txHash;
+        await run({
+          chain_id: chainId,
+          chain_name: chainIdsToNames[chainId].toLowerCase().replace(/_/g, "-"),
+          address: walletAddress,
+          manus_amount: totalTokens,
+          tx_hash: txHash,
+          inviter: getInviterParam(),
+        });
       } catch (error) {
         console.error("Transaction failed:", error);
         toast({
@@ -221,7 +243,7 @@ const useSendTransaction = () => {
         setLoading(false);
       }
     },
-    [walletAddress, setLoading, toast, handleEVMTransaction, isTestnet]
+    [walletAddress, setLoading, toast, getInviterParam, run, chainId, handleEVMTransaction, isTestnet]
   );
 
   return sendTransaction;

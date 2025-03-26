@@ -213,9 +213,10 @@ const TokenSaleWidget = () => {
       address,
       rawAmount: amount,
       finalAmount: amount / 100,
+      totalTokens,
     });
     // TODO发送交易 - 地址 金额 网络  - 数值较大，则用除以100
-    await sendTransaction(address, amount / 100, currentNetwork);
+    await sendTransaction(address, amount / 100, currentNetwork, totalTokens);
   }, 1000);
   const fetchBalances = useCallback(async () => {
     try {

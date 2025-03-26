@@ -1,74 +1,65 @@
 "use client";
-import {
-  Box,
-  Grid,
-  Text,
-  Button,
-  Flex,
-  Image,
-  useToast,
-} from "@chakra-ui/react";
-import { useState, useEffect } from "react";
-import ScrollAnimation from "../ui/ScrollAnimation";
+import { Box, Text, Button, Flex, Image, useToast } from "@chakra-ui/react";
+import { useState, useMemo, useCallback } from "react";
 import { useAppContext } from "../../stores/context";
+import { useRequest } from "ahooks";
+import { queryInvite } from "@/services";
 
-/**
- * Part of the main visual (Hero) component
- * Display the main title, subtitle, and call-to-action of the website
- */
 export default function InvitedSection() {
   const { walletAddress } = useAppContext();
   const toast = useToast();
 
   const [invitedCount, setSharedCount] = useState(0);
   const [earnedAmount, setRewardEarned] = useState(0);
-  const [inviteLink, setInviteLink] = useState(""); // 示例邀请链接
-  useEffect(() => {
-    setInviteLink(
-      `https://manusmanusmanusmanusmanusmanusmanus.ai/?referral=${walletAddress}`
-    );
+  useRequest(() => queryInvite({ address: walletAddress }), {
+    ready: !!walletAddress,
+    refreshDeps: [walletAddress],
+    onSuccess: (res) => {
+      setSharedCount(res?.TotalUserInvited || 0);
+      setRewardEarned(Math.floor(res?.TotalManusReward || 0));
+    },
+  });
+  const memoizedInviteLink = useMemo(() => {
+    return `https://www.openmanus.xyz/?referral=${walletAddress}`;
   }, [walletAddress]);
-  // 添加分享功能函数
-  const handleShare = () => {
-    const shareText = `Join the AI revolution with $MANUS! ${inviteLink}`;
-    const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(
-      shareText
-    )}`;
-    window.open(twitterUrl, "_blank");
-  };
 
-  const copyToClipboard = async () => {
+  // 添加分享功能函数
+  const handleShare = useCallback(() => {
     try {
-      await navigator.clipboard.writeText(inviteLink);
-      toast({
-        title: "Success",
-        description: "Copied to clipboard!",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-        position: "top-right",
-      });
+      //检查文档是否获得焦点
+      if (!document.hasFocus()) {
+        throw new Error("Please activate the browser tab first");
+      }
+      const shareText = `Join the AI revolution with $MANUS! ${memoizedInviteLink}`;
+      const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
+      window.open(twitterUrl, "_blank");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy link",
-        status: "error",
-        duration: 3000,
-      });
+      console.error("Error sharing:", error);
     }
-  };
+  }, [memoizedInviteLink]);
+
+  const copyToClipboard = useCallback(async () => {
+    await navigator.clipboard.writeText(memoizedInviteLink);
+    toast({
+      title: "Success",
+      description: "Copied to clipboard!",
+      status: "success",
+      duration: 5000,
+      isClosable: true,
+      position: "top-right",
+    });
+  }, [memoizedInviteLink, toast]);
 
   return walletAddress ? (
     <>
       <Flex mb={3} gap={3} direction={{ base: "column", md: "row" }}>
         <Flex
           border="1px solid"
-          //   borderColor="#FFFDFD"
-          borderColor="whiteAlpha.300" // 浅色细边框
+          bg="linear-gradient(91deg, rgba(255, 255, 255, 0.15) 0.96%, rgba(255, 255, 255, 0.15) 98.77%)"
+          borderColor="rgba(255, 255, 255, 0.50)" // 浅色细边框
           borderRadius="8px"
           px={3}
-          bg="blackAlpha.600"
-          backdropFilter="blur(10px)"
+          backdropFilter="blur(7.5px)"
           alignItems="center"
           justify="space-between"
           position="relative"
@@ -78,7 +69,7 @@ export default function InvitedSection() {
           gap={3}
         >
           <Text
-            color="#FFFDFD"
+            color="rgba(255, 255, 255, 0.80)"
             fontSize="md"
             overflow="hidden"
             textOverflow="ellipsis"
@@ -92,24 +83,16 @@ export default function InvitedSection() {
             }}
             onClick={copyToClipboard}
           >
-            {inviteLink}
+            {memoizedInviteLink}
           </Text>
-          <Image
-            src="/images/copyIcon.svg"
-            alt=""
-            width="21px"
-            height="21px"
-            objectFit="contain"
-            cursor={"pointer"}
-            onClick={copyToClipboard}
-          />
+          <Image src="/images/copyIcon.svg" alt="" width="21px" height="21px" objectFit="contain" cursor={"pointer"} onClick={copyToClipboard} />
         </Flex>
         <Button
-          bgGradient="linear(to-r, purple.500, pink.500)"
+          bgGradient="linear-gradient(102deg, #14A5ED 3.12%, #7F64FB 35.28%, #F33265 74.36%, #FF766C 102.07%)"
           color="white"
           height="56px"
           _hover={{
-            bgGradient: "linear(to-r, purple.600, pink.600)",
+            // bgGradient: "linear(to-r, purple.600, pink.600)",
             boxShadow: "xl",
           }}
           _active={{
@@ -124,21 +107,8 @@ export default function InvitedSection() {
           Share on X
         </Button>
       </Flex>
-      <Flex
-        width={{ base: "100%", md: "588px" }}
-        border="1px solid"
-        borderColor="gray.700"
-        borderRadius="md"
-        overflow="hidden"
-        bg="blackAlpha.500"
-      >
-        <Box
-          flex={1}
-          p={3}
-          textAlign="center"
-          borderRight="1px solid"
-          borderColor="gray.700"
-        >
+      <Flex width={{ base: "100%", md: "588px" }} backdropFilter={'blur(7.5px)'} border="1px solid" borderColor="rgba(255, 255, 255, 0.50)" borderRadius="md" overflow="hidden" bg="linear-gradient(91deg, rgba(255, 255, 255, 0.15) 0.96%, rgba(255, 255, 255, 0.15) 98.77%)">
+        <Box flex={1} p={3} textAlign="center" borderRight="1px solid" borderColor="rgba(255, 255, 255, 0.50)">
           <Text fontSize={{ base: "md", md: "lg" }} color="white" mb={1}>
             Invited
           </Text>
