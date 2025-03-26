@@ -11,9 +11,11 @@ export default function InvitedSection() {
 
   const [invitedCount, setSharedCount] = useState(0);
   const [earnedAmount, setRewardEarned] = useState(0);
+  const requestDeps = useMemo(() => [walletAddress], [walletAddress]);
+
   useRequest(() => queryInvite({ address: walletAddress }), {
     ready: !!walletAddress,
-    refreshDeps: [walletAddress],
+    refreshDeps: requestDeps,
     onSuccess: (res) => {
       setSharedCount(res?.TotalUserInvited || 0);
       setRewardEarned(Math.floor(res?.TotalManusReward || 0));
