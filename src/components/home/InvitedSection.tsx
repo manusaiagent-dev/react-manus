@@ -32,7 +32,13 @@ export default function InvitedSection() {
       if (!document.hasFocus()) {
         throw new Error("Please activate the browser tab first");
       }
-      const shareText = `Join the AI revolution with $MANUS! ${memoizedInviteLink}`;
+      const shareText = `Manus Rises. GPT Falls. 🚀
+A new era begins—self-evolving intelligence challenges centralized AI. Join the revolution!
+
+🔗 ${memoizedInviteLink}
+
+#Manus #AIRevolution`;
+      // const shareText = `Join the AI revolution with $MANUS! ${memoizedInviteLink}`;
       const twitterUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
       window.open(twitterUrl, "_blank");
     } catch (error) {
@@ -109,7 +115,15 @@ export default function InvitedSection() {
           Share on X
         </Button>
       </Flex>
-      <Flex width={{ base: "100%", md: "588px" }} backdropFilter={'blur(7.5px)'} border="1px solid" borderColor="rgba(255, 255, 255, 0.50)" borderRadius="md" overflow="hidden" bg="linear-gradient(91deg, rgba(255, 255, 255, 0.15) 0.96%, rgba(255, 255, 255, 0.15) 98.77%)">
+      <Flex
+        width={{ base: "100%", md: "588px" }}
+        backdropFilter={"blur(7.5px)"}
+        border="1px solid"
+        borderColor="rgba(255, 255, 255, 0.50)"
+        borderRadius="md"
+        overflow="hidden"
+        bg="linear-gradient(91deg, rgba(255, 255, 255, 0.15) 0.96%, rgba(255, 255, 255, 0.15) 98.77%)"
+      >
         <Box flex={1} p={3} textAlign="center" borderRight="1px solid" borderColor="rgba(255, 255, 255, 0.50)">
           <Text fontSize={{ base: "md", md: "lg" }} color="white" mb={1}>
             Invited
