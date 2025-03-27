@@ -197,10 +197,7 @@ export default function HeroSection() {
 
           {/* Right Token Sale Area */}
           <GridItem position={{ base: "static", md: "absolute" }} right={0} mt={{ base: 8, md: 0 }}>
-            <Text fontSize={{ base: "24px", md: "36px" }} fontFamily="var(--font-jersey)" textAlign={"center"} color="white" fontWeight="bold" mb={2}>
-              {!isTestnet ? "COMING SOON" : "Buy $ManusCoin tokens now:"}
-              {/* Buy $ManusCoin tokens now: */}
-            </Text>
+            
             <TokenSale />
             <Box
               display="none"

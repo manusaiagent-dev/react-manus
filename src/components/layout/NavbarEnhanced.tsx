@@ -430,7 +430,7 @@ const NavbarEnhanced = () => {
               />
             </Box>
           </Link>
-          <TestnetSwitchItem />
+          {/* <TestnetSwitchItem /> */}
           <WalletConnector />
         </HStack>
 

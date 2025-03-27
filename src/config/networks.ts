@@ -1,4 +1,4 @@
-const NETWORKS: any = {
+const NETWORKS = {
   ETH: {
     chainId: "0x1",
     chainIdNumber: 1,
@@ -121,7 +121,7 @@ const chainIdsToNames: Record<string | number, string> = {
 const toAddress = {
     SOL: '2moCDRhmTKQW32q5XMp9MraaLLEyCiFNg7NbCp3NdV5A', // 正式
     SOL_TEST: 'EgfRtdJwzwnKYHsKUzLYkAMEN3docYuaCtLesytWKKQj', // 测试
-    ETH: '0xf6A89FBc3fB613bC21bf3F088F87Acd114C799B7', // 正式
+    ETH: '0x51e26ACe2cAe63dB1E6A6FA1314B50456d4A30EC', // 正式
     ETH_TEST: '0x36bcb4E3bAa37b2D37d89cD7E9663942038c6703', // 测试
 }
 export { NETWORKS, chainIdsToNames, toAddress };
