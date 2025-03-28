@@ -48,7 +48,7 @@ const PRESALE_CONFIG = {
 const usePresaleTimer = () => {
   const [isActive, setIsActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [daysPassed, setDaysPassed] = useState(0); // 已过天数
+  const [daysPassed, setDaysPassed] = useState(1); // 默认设为第1天
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -58,7 +58,6 @@ const usePresaleTimer = () => {
 
       // 计算激活状态
       const isActive = nowUTC >= startUTC && nowUTC <= endUTC;
-
       setIsActive(isActive);
 
       // 计算目标时间（开始前显示开始时间，开始后显示结束时间）
@@ -71,12 +70,17 @@ const usePresaleTimer = () => {
         minutes: Math.max(0, Math.floor((diff % 3600000) / 60000)),
         seconds: Math.max(0, Math.floor((diff % 60000) / 1000)),
       });
-      // 计算已过天数（当天算第一天）
-      if (isActive) {
+      // 计算已过天数逻辑
+      if (nowUTC < startUTC) {
+        // 预售开始前始终显示第一天价格
+        setDaysPassed(1);
+      } else if (isActive) {
+        // 预售期间计算实际天数
         const elapsedDays = Math.floor((nowUTC - startUTC) / 86400000) + 1;
         setDaysPassed(Math.min(elapsedDays, PRESALE_CONFIG.DURATION_DAYS));
       } else {
-        setDaysPassed(0);
+        // 预售结束后保持最后一天价格
+        setDaysPassed(PRESALE_CONFIG.DURATION_DAYS);
       }
     }, 1000);
 
@@ -140,37 +144,40 @@ const TokenSaleWidget = () => {
     // 转换为指定小数位数的字符串，避免科学计数法
     // 使用ROUND_DOWN模式确保不会四舍五入
     let formatted = price.toDecimalPlaces(decimals, Decimal.ROUND_DOWN).toString();
-  
+
     // 处理科学计数法（例如 1e-8 → 0.00000001）
-    if (formatted.includes('e')) {
+    if (formatted.includes("e")) {
       // 拆分科学计数法数字
-      const [coefficient, exponent] = formatted.split('e');
+      const [coefficient, exponent] = formatted.split("e");
       const exp = parseInt(exponent, 10);
-      
+
       // 处理负指数（小数）
       if (exp < 0) {
         const zerosNeeded = Math.abs(exp) - 1;
-        formatted = '0.' + '0'.repeat(zerosNeeded) + coefficient.replace('.', '');
+        formatted = "0." + "0".repeat(zerosNeeded) + coefficient.replace(".", "");
       }
       // 处理正指数（大数）
       else {
-        const [integer, fraction = ''] = coefficient.split('.');
-        formatted = integer + fraction + '0'.repeat(exp - fraction.length);
+        const [integer, fraction = ""] = coefficient.split(".");
+        formatted = integer + fraction + "0".repeat(exp - fraction.length);
       }
     }
-  
+
     // 去除末尾多余的零和小数点
     // 示例: 0.000000010000 → 0.00000001
     return formatted
-      .replace(/(\.[0-9]*[1-9])0+$/, '$1')  // 去除小数部分末尾的零
-      .replace(/\.$/, '');                   // 去除孤立的小数点
+      .replace(/(\.[0-9]*[1-9])0+$/, "$1") // 去除小数部分末尾的零
+      .replace(/\.$/, ""); // 去除孤立的小数点
   };
   // 精确计算函数
   const calculateValues = () => {
     const config = CHAIN_CONFIG[transNetWork(currentNetwork)] || CHAIN_CONFIG["ETH"];
-    
+
+    // 强制使用第1天的系数（无论是否在预售期）
+    const effectiveDaysPassed = Math.max(1, Math.min(daysPassed, PRESALE_CONFIG.DURATION_DAYS));
+
     // 计算每日递减系数（1.2^天数）
-    const dailyDecreaseFactor = config.dailyFactor.pow(daysPassed - 1);
+    const dailyDecreaseFactor = config.dailyFactor.pow(effectiveDaysPassed - 1);
 
     // 当前每份代币数 = 初始代币数 / 递减系数
     const currentTokensPerShare = config.initialTokensPerShare.div(dailyDecreaseFactor);
@@ -179,7 +186,7 @@ const TokenSaleWidget = () => {
 
     // 总代币数 = 当前每份代币数 * 购买份数（向下取整）
     const totalTokens = currentTokensPerShare.mul(shares).floor();
-   
+
     return {
       pricePerToken: formatTokenPrice(pricePerToken, 20),
       totalTokens: totalTokens.toNumber(),
@@ -213,7 +220,7 @@ const TokenSaleWidget = () => {
         "购买数量-份数": shares,
         花费的eth数量: amount,
         所得manus数量: totalTokens,
-        pricePerToken
+        pricePerToken,
       });
       // TODO发送交易 - 地址 金额 网络  - 数值较大，则用除以100
       await sendTransaction(address, amount, currentNetwork, totalTokens);
