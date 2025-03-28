@@ -171,57 +171,58 @@ const TokenSaleWidget = () => {
   // };
   const formatTokenPrice = (price: Decimal, decimals: number) => {
     if (typeof decimals !== "number" || decimals < 0) {
-      throw new Error("Invalid decimals parameter");
+        throw new Error("Invalid decimals parameter");
     }
 
     let formatted: string;
 
-    // 处理大于等于1的数值（保留三位小数）
-    if (price >= 1) {
-      formatted = price.toDecimalPlaces(3, Decimal.ROUND_DOWN).toString();
+    // 处理大于等于0.001的数值（保留三位小数）
+    if (price >= 0.001) {
+        formatted = price.toDecimalPlaces(3, Decimal.ROUND_DOWN).toString();
     }
-    // 处理小于1的数值（保留三位有效数字）
+    // 处理小于0.001的数值（保留三位有效数字）
     else {
-      // 添加前导零处理逻辑
-      const temp = price.toSignificantDigits(3, Decimal.ROUND_DOWN);
-      formatted = temp.lt(1) ? `0${temp.toString()}` : temp.toString();
+        formatted = price.toSignificantDigits(3, Decimal.ROUND_DOWN).toString();
     }
 
     // 处理科学计数法
     if (formatted.includes("e")) {
-      formatted = handleScientificNotation(formatted);
+        formatted = handleScientificNotation(formatted);
     }
-    // 新增：统一处理前导零问题
+    
+    // 强制添加前导零
     if (formatted.startsWith(".")) {
-      formatted = "0" + formatted;
+        formatted = "0" + formatted;
     }
-    // 优化格式：去除无效零，保留有效小数位
-       // 优化格式：去除无效零，保留有效小数位
-       return formatted
-       .replace(/(\..*?[1-9])0+$/, '$1')  // 保留有效数字后的零
-       .replace(/\.$/, '')                // 去除孤立的小数点
-       .replace(/(\..*?)0{3,}$/, (_, p1) => p1); // 保证最多三位有效数字
-  };
 
-  const handleScientificNotation = (str: string) => {
+    // 精确去除末尾无效零
+    return formatted
+        .replace(/(\.\d*?[1-9])0+$/, '$1') // 只移除末尾连续零
+        .replace(/\.$/, ''); // 移除孤立小数点
+};
+
+const handleScientificNotation = (str: string) => {
     const [coefficient, exponentStr] = str.split('e');
     const exp = parseInt(exponentStr, 10);
 
     if (isNaN(exp)) return coefficient;
 
+    // 处理负指数（小数）
     if (exp < 0) {
-        const zeros = Math.abs(exp) - 1;
-        const [integer, fraction = ''] = coefficient.split('.');
-        const result = `0.${'0'.repeat(zeros)}${integer}${fraction}`;
-        // 新增：补全前导零
-        return result.startsWith('.') ? `0${result}` : result;
+        const totalZeros = Math.abs(exp) - 1;
+        const [intPart, fractPart = ''] = coefficient.split('.');
+        
+        // 精确计算小数点位置
+        const valueStr = intPart + (fractPart || '');
+        const paddedValue = valueStr.padStart(totalZeros + valueStr.length, '0');
+        
+        return `0.${paddedValue.slice(0, totalZeros + 3)}`; // 严格保留三位有效数字
     }
 
+    // 处理正指数（大数）
     const [intPart, fractPart = ''] = coefficient.split('.');
-    const result = `${intPart}${fractPart}${'0'.repeat(exp - fractPart.length)}`;
-    // 新增：处理前导零
-    return result.startsWith('.') ? `0${result}` : result;
-  };
+    return `${intPart}${fractPart}${'0'.repeat(exp - fractPart.length)}`;
+};
   // 精确计算函数
   const calculateValues = () => {
     const config = CHAIN_CONFIG[transNetWork(currentNetwork)] || CHAIN_CONFIG["ETH"];
