@@ -246,7 +246,6 @@ const handleScientificNotation = (str: string) => {
       totalTokens: totalTokens.toNumber(),
       ethPerShare: config.basePricePerShare.toFixed(2), // 固定显示0.01
     };
-    return;
   };
   const { pricePerToken, totalTokens, ethPerShare } = calculateValues();
 
@@ -499,11 +498,11 @@ const handleScientificNotation = (str: string) => {
           >
             {/* {IS_PRESALE_ACTIVE ? "Buy" : "Coming Soon"} &nbsp; */}
             Buy &nbsp;
-            {
+            {/* {
               <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
                 {totalTokens.toLocaleString()} &nbsp;
               </Text>
-            }
+            } */}
             $ManusCoin
           </Button>
         </ScrollAnimation>
