@@ -607,10 +607,10 @@ const NavbarEnhanced = () => {
                   </Box>
                 </Link>
               </HStack>
-              <Flex justify='center'>
+              {/* <Flex justify='center'>
               <TestnetSwitchItem />
 
-              </Flex>
+              </Flex> */}
 
               <Box pt={2}>
 

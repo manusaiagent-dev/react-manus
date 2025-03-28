@@ -13,31 +13,31 @@ const CHAIN_CONFIG: {
   [key: string]: {
     symbol: string;
     dailyFactor: Decimal;
-    baseTotalEth: Decimal;
-    baseTotalTokens: Decimal;
+    basePricePerShare: Decimal;
+    initialTokensPerShare: Decimal;
     decimals: number;
   };
 } = {
   ETH: {
     symbol: "ETH",
     dailyFactor: new Decimal(1.2),
-    baseTotalEth: new Decimal(0.5),
-    baseTotalTokens: new Decimal(50000000),
-    decimals: 9,
+    basePricePerShare: new Decimal(0.05), // 每份代币的基础价格
+    initialTokensPerShare: new Decimal(1000000), // 初始1,000,000代币/份
+    decimals: 20,
   },
   BNB: {
     symbol: "BNB",
     dailyFactor: new Decimal(1.2),
-    baseTotalEth: new Decimal(1.6),
-    baseTotalTokens: new Decimal(50000000),
-    decimals: 4,
+    basePricePerShare: new Decimal(0.16),
+    initialTokensPerShare: new Decimal(1000000), // 初始1,000,000代币/份
+    decimals: 20,
   },
   SOL: {
     symbol: "SOL",
     dailyFactor: new Decimal(1.2),
-    baseTotalEth: new Decimal(7),
-    baseTotalTokens: new Decimal(50000000),
-    decimals: 2,
+    basePricePerShare: new Decimal(0.7), // 每份代币的基础价格
+    initialTokensPerShare: new Decimal(1000000), // 初始1,000,000代币/份
+    decimals: 20,
   },
 };
 // UTC时间配置（示例：2025年3月30日周日晚12点UTC）
@@ -48,8 +48,7 @@ const PRESALE_CONFIG = {
 const usePresaleTimer = () => {
   const [isActive, setIsActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  // const [targetDate, setTargetDate] = useState(PRESALE_UTC_START);
-  const [daysPassed, setDaysPassed] = useState(0); // 新增天数状态
+  const [daysPassed, setDaysPassed] = useState(0); // 已过天数
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -58,7 +57,8 @@ const usePresaleTimer = () => {
       const endUTC = startUTC + PRESALE_CONFIG.DURATION_DAYS * 86400000;
 
       // 计算激活状态
-      const isActive = nowUTC >= startUTC;
+      const isActive = nowUTC >= startUTC && nowUTC <= endUTC;
+
       setIsActive(isActive);
 
       // 计算目标时间（开始前显示开始时间，开始后显示结束时间）
@@ -86,7 +86,6 @@ const usePresaleTimer = () => {
   return { isActive, timeLeft, daysPassed };
 };
 const TokenSaleWidget = () => {
-  // 设置固定目标时间（2025-03-17）
   const { isActive: isPresaleActive, timeLeft, daysPassed } = usePresaleTimer();
 
   const [shares, setShares] = useState(5);
@@ -101,7 +100,6 @@ const TokenSaleWidget = () => {
   }>({ eth: null, sol: null, bsc: null });
 
   const sendTransaction = useCrossChainTransfer();
-
 
   // 进度计算
   useEffect(() => {
@@ -129,25 +127,6 @@ const TokenSaleWidget = () => {
   const formatTimeUnit = (value: number) => {
     return value < 0 ? "00" : value.toString().padStart(2, "0");
   };
-  // 计算进度
-  // const calculateProgress = useCallback(() => {
-  //   const now = new Date();
-  //   const startTime = getTodayStart().getTime();
-  //   const endTime = getEndDate().getTime();
-  //   const totalDuration = endTime - startTime;
-  //   const elapsedTime = now.getTime() - startTime;
-
-  //   // 计算进度百分比
-  //   const progressValue = Math.min((elapsedTime / totalDuration) * 100, 100);
-  //   setProgress(progressValue);
-  // }, [getEndDate]);
-  // 定时更新进度
-  // useEffect(() => {
-  //   calculateProgress(); // 初始化计算
-  //   const timer = setInterval(calculateProgress, 1000); // 每秒更新一次
-
-  //   return () => clearInterval(timer); // 清理定时器
-  // }, [calculateProgress]);
   const transNetWork = (network: string) => {
     const networkMap = {
       SOL: "SOL",
@@ -157,43 +136,56 @@ const TokenSaleWidget = () => {
     };
     return networkMap[network] || "ETH";
   };
-
+  const formatTokenPrice = (price: Decimal, decimals: number) => {
+    // 转换为指定小数位数的字符串，避免科学计数法
+    // 使用ROUND_DOWN模式确保不会四舍五入
+    let formatted = price.toDecimalPlaces(decimals, Decimal.ROUND_DOWN).toString();
+  
+    // 处理科学计数法（例如 1e-8 → 0.00000001）
+    if (formatted.includes('e')) {
+      // 拆分科学计数法数字
+      const [coefficient, exponent] = formatted.split('e');
+      const exp = parseInt(exponent, 10);
+      
+      // 处理负指数（小数）
+      if (exp < 0) {
+        const zerosNeeded = Math.abs(exp) - 1;
+        formatted = '0.' + '0'.repeat(zerosNeeded) + coefficient.replace('.', '');
+      }
+      // 处理正指数（大数）
+      else {
+        const [integer, fraction = ''] = coefficient.split('.');
+        formatted = integer + fraction + '0'.repeat(exp - fraction.length);
+      }
+    }
+  
+    // 去除末尾多余的零和小数点
+    // 示例: 0.000000010000 → 0.00000001
+    return formatted
+      .replace(/(\.[0-9]*[1-9])0+$/, '$1')  // 去除小数部分末尾的零
+      .replace(/\.$/, '');                   // 去除孤立的小数点
+  };
   // 精确计算函数
   const calculateValues = () => {
     const config = CHAIN_CONFIG[transNetWork(currentNetwork)] || CHAIN_CONFIG["ETH"];
+    
+    // 计算每日递减系数（1.2^天数）
+    const dailyDecreaseFactor = config.dailyFactor.pow(daysPassed - 1);
 
-    // 每日递增系数
-    const dailyIncrease = config.dailyFactor.pow(daysPassed - 1);
+    // 当前每份代币数 = 初始代币数 / 递减系数
+    const currentTokensPerShare = config.initialTokensPerShare.div(dailyDecreaseFactor);
+    // 单价 = 每份价格 / 每份代币数
+    const pricePerToken = config.basePricePerShare.div(currentTokensPerShare);
 
-    // 第 1 天的价格
-    const basePricePerToken = config.baseTotalEth.div(config.baseTotalTokens);
-
-    // 当前价格
-    const pricePerToken = basePricePerToken.mul(dailyIncrease).toFixed(config.decimals + 6);
-
-    // 总代币数
-    const totalTokens = config.baseTotalTokens.div(dailyIncrease).floor();
-
-    // 每份代币数
-    const tokensPerShare = totalTokens.div(10).floor();
-
-    // 每份ETH/SOL/BNB
-    const ethPerShare = config.baseTotalEth.div(10).div(dailyIncrease).toFixed(config.decimals);
-
-    // 去掉末尾多余的零
-    const formatPrice = (price) => {
-      if (price.includes("e")) {
-        return new Decimal(price).toFixed(config.decimals + 6).replace(/\.?0+$/, "");
-      }
-      return price.replace(/\.?0+$/, "");
-    };
-
+    // 总代币数 = 当前每份代币数 * 购买份数（向下取整）
+    const totalTokens = currentTokensPerShare.mul(shares).floor();
+   
     return {
-      pricePerToken: formatPrice(pricePerToken), // 格式化后的价格
-      tokensPerShare: tokensPerShare.toNumber(), // 每份代币数
-      totalTokens: tokensPerShare.mul(shares).toNumber(),
-      ethPerShare: formatPrice(ethPerShare), // 每份 ETH/SOL/BNB
+      pricePerToken: formatTokenPrice(pricePerToken, 20),
+      totalTokens: totalTokens.toNumber(),
+      ethPerShare: config.basePricePerShare.toFixed(2), // 固定显示0.01
     };
+    return;
   };
   const { pricePerToken, totalTokens, ethPerShare } = calculateValues();
 
@@ -215,12 +207,13 @@ const TokenSaleWidget = () => {
       const amount = ethPerShare * shares;
       // 添加调试信息
       console.log("[Transaction]", {
-        network: currentNetwork,
-        isTestnet,
-        address,
-        rawAmount: amount,
-        finalAmount: amount,
-        totalTokens,
+        网络network: currentNetwork,
+        当前地址: address,
+        第几天: daysPassed,
+        "购买数量-份数": shares,
+        花费的eth数量: amount,
+        所得manus数量: totalTokens,
+        pricePerToken
       });
       // TODO发送交易 - 地址 金额 网络  - 数值较大，则用除以100
       await sendTransaction(address, amount, currentNetwork, totalTokens);
@@ -445,11 +438,11 @@ const TokenSaleWidget = () => {
           >
             {/* {IS_PRESALE_ACTIVE ? "Buy" : "Coming Soon"} &nbsp; */}
             Buy &nbsp;
-            {isTestnet && (
+            {
               <Text ml={"4px"} mr={"4px"} color={"#ff766c"}>
                 {totalTokens.toLocaleString()} &nbsp;
               </Text>
-            )}
+            }
             $ManusCoin
           </Button>
         </ScrollAnimation>
