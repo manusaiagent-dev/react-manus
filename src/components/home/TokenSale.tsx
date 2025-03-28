@@ -170,33 +170,40 @@ const TokenSaleWidget = () => {
   //     .replace(/\.$/, ""); // 去除孤立的小数点
   // };
   const formatTokenPrice = (price: Decimal, decimals: number) => {
-    if (typeof decimals !== 'number' || decimals < 0) {
-        throw new Error('Invalid decimals parameter');
+    if (typeof decimals !== "number" || decimals < 0) {
+      throw new Error("Invalid decimals parameter");
     }
 
     let formatted: string;
-    
+
     // 处理大于等于1的数值（保留三位小数）
     if (price >= 1) {
-        formatted = price.toDecimalPlaces(3, Decimal.ROUND_DOWN).toString();
+      formatted = price.toDecimalPlaces(3, Decimal.ROUND_DOWN).toString();
     }
     // 处理小于1的数值（保留三位有效数字）
     else {
-        formatted = price.toSignificantDigits(3, Decimal.ROUND_DOWN).toString();
+      // 添加前导零处理逻辑
+      const temp = price.toSignificantDigits(3, Decimal.ROUND_DOWN);
+      formatted = temp.lt(1) ? `0${temp.toString()}` : temp.toString();
     }
 
     // 处理科学计数法
-    if (formatted.includes('e')) {
-        formatted = handleScientificNotation(formatted);
+    if (formatted.includes("e")) {
+      formatted = handleScientificNotation(formatted);
     }
-
+    // 新增：统一处理前导零问题
+    if (formatted.startsWith(".")) {
+      formatted = "0" + formatted;
+    }
     // 优化格式：去除无效零，保留有效小数位
-    return formatted
-        .replace(/0*(\.\d*[1-9]?)0*$/, '$1')
-        .replace(/\.$/, '');
-};
+       // 优化格式：去除无效零，保留有效小数位
+       return formatted
+       .replace(/(\..*?[1-9])0+$/, '$1')  // 保留有效数字后的零
+       .replace(/\.$/, '')                // 去除孤立的小数点
+       .replace(/(\..*?)0{3,}$/, (_, p1) => p1); // 保证最多三位有效数字
+  };
 
-const handleScientificNotation = (str: string) => {
+  const handleScientificNotation = (str: string) => {
     const [coefficient, exponentStr] = str.split('e');
     const exp = parseInt(exponentStr, 10);
 
@@ -205,12 +212,16 @@ const handleScientificNotation = (str: string) => {
     if (exp < 0) {
         const zeros = Math.abs(exp) - 1;
         const [integer, fraction = ''] = coefficient.split('.');
-        return `0.${'0'.repeat(zeros)}${integer}${fraction}`;
+        const result = `0.${'0'.repeat(zeros)}${integer}${fraction}`;
+        // 新增：补全前导零
+        return result.startsWith('.') ? `0${result}` : result;
     }
 
     const [intPart, fractPart = ''] = coefficient.split('.');
-    return `${intPart}${fractPart}${'0'.repeat(exp - fractPart.length)}`;
-};
+    const result = `${intPart}${fractPart}${'0'.repeat(exp - fractPart.length)}`;
+    // 新增：处理前导零
+    return result.startsWith('.') ? `0${result}` : result;
+  };
   // 精确计算函数
   const calculateValues = () => {
     const config = CHAIN_CONFIG[transNetWork(currentNetwork)] || CHAIN_CONFIG["ETH"];
