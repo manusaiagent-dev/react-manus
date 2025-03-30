@@ -46,7 +46,7 @@ export const getCryptoBalance = async (
     // RPC配置
     const rpcConfig = {
       ETH: {
-          mainnet: 'https://rpc.ankr.com/eth',
+          mainnet: 'https://eth-mainnet.g.alchemy.com/v2/vLkjMqlSn_QR1yfrrHtWQZGEzrbsEnIS',
           testnet: 'https://rpc.ankr.com/eth_sepolia'
       },
       BSC: {
