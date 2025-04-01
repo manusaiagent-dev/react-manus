@@ -42,7 +42,7 @@ const CHAIN_CONFIG: {
 };
 // UTC时间配置（示例：2025年3月30日周日晚12点UTC）
 const PRESALE_CONFIG = {
-  START_UTC: Date.UTC(2025, 2, 30), // 2025-03-30 00:00:00 UTC
+  START_UTC: Date.UTC(2025, 3, 6), // 2025-04-06 00:00:00 UTC
   DURATION_DAYS: 7,
 };
 const usePresaleTimer = () => {
